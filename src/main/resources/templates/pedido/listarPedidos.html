@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Pedidos')}">
+    <title>Pedidos</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container">
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2>Pedidos</h2>
+            <p>Compras feitas pela loja (carrinho) e pedidos de balcão.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/pedidos/criar}" href="#" class="btn btn-outline">
+                <i class="fa-solid fa-cash-register"></i> Novo pedido (balcão)
+            </a>
+            <a th:href="@{/loja}" href="#" class="btn btn-primary">
+                <i class="fa-solid fa-store"></i> Ir para a loja
+            </a>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <div class="card">
+
+        <form class="toolbar" th:action="@{/pedidos/listar}" action="#" method="get" role="search">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" name="q" th:value="${q}" aria-label="Buscar pedidos"
+                       placeholder="Buscar por nº do pedido, nome ou CPF do aluno, forma de pagamento">
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+            <a th:if="${q != null}" th:href="@{/pedidos/listar}" href="#" class="btn btn-secondary">Limpar</a>
+        </form>
+
+        <div class="result-info">
+            <th:block th:if="${q != null}">
+                <strong th:text="${pagina.totalElements}">0</strong> pedido(s) encontrado(s) para
+                “<strong th:text="${q}">termo</strong>”
+            </th:block>
+            <th:block th:if="${q == null}">
+                <strong th:text="${pagina.totalElements}">0</strong> pedido(s) registrado(s)
+            </th:block>
+        </div>
+
+        <div class="table-wrapper" th:unless="${#lists.isEmpty(pedidos)}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Nº</th>
+                    <th>Data</th>
+                    <th>Aluno</th>
+                    <th>Itens</th>
+                    <th>Pagamento</th>
+                    <th>Total</th>
+                    <th class="text-right">Ações</th>
+                </tr>
+                </thead>
+                <tbody th:attr="data-destacar=${q}">
+                <tr th:each="pedido : ${pedidos}">
+                    <td class="td-strong destacavel" th:text="'#' + ${pedido.idPedido}">#1</td>
+                    <td class="nowrap" th:text="${pedido.dataFormatada}">01/01/2026</td>
+                    <td>
+                        <span class="td-strong destacavel" th:text="${pedido.aluno?.nomeAluno}">Aluno</span>
+                        <span class="td-sub destacavel" th:if="${pedido.aluno != null}"
+                              th:text="'CPF ' + ${pedido.aluno.cpfFormatado}">CPF</span>
+                    </td>
+                    <td th:text="${pedido.quantidadeItens} + ' un.'">2 un.</td>
+                    <td>
+                        <span class="badge badge-cinza destacavel" th:text="${pedido.formaPagamento != null ? pedido.formaPagamento : 'Não informado'}">PIX</span>
+                    </td>
+                    <td class="nowrap td-strong"
+                        th:text="'R$ ' + ${#numbers.formatDecimal(pedido.totalPedido != null ? pedido.totalPedido : 0, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</td>
+                    <td>
+                        <div class="td-actions">
+                            <a class="btn btn-outline btn-sm" href="#"
+                               th:href="@{/pedidos/detalhes/{id}(id=${pedido.idPedido})}">
+                                <i class="fa-solid fa-eye"></i> <span>Detalhes</span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(pedidos)}">
+            <i class="fa-solid fa-receipt"></i>
+            <h3 th:text="${q != null} ? 'Nenhum pedido encontrado' : 'Nenhum pedido registrado'">Nenhum pedido</h3>
+            <p th:text="${q != null} ? 'Busque pelo número do pedido (ex.: 12), nome ou CPF do aluno.' : 'Os pedidos aparecem aqui quando uma compra é finalizada no carrinho.'">
+                Nenhum pedido.
+            </p>
+            <a th:href="@{/loja}" href="#" class="btn btn-primary"><i class="fa-solid fa-store"></i> Ir para a loja</a>
+        </div>
+
+        <div th:replace="~{fragments/layout :: paginacao(${pagina}, ${urlBase})}"></div>
+
+    </div>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

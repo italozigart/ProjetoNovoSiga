@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head(${atletica.idAtletica == null ? 'Nova atlética' : 'Editar atlética'})}">
+    <title>Formulário de Atlética</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container container-estreito">
+
+    <nav class="breadcrumb">
+        <a th:href="@{/atleticas/listar}" href="#">Atléticas</a>
+        <i class="fa-solid fa-chevron-right"></i>
+        <span th:text="${atletica.idAtletica == null} ? 'Nova atlética' : 'Editar atlética'">Nova atlética</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2 th:text="${atletica.idAtletica == null} ? 'Cadastrar atlética' : 'Editar atlética'">Formulário de Atlética</h2>
+            <p>Preencha as informações abaixo. Campos com <span class="required">*</span> são obrigatórios.</p>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <form class="card form-card" th:action="@{/atleticas/salvar}" action="#" method="post"
+          th:object="${atletica}" enctype="multipart/form-data">
+
+        <input type="hidden" th:field="*{idAtletica}">
+
+        <div class="section">
+            <div class="section-title"><i class="fa-solid fa-trophy"></i> Dados da atlética</div>
+
+            <div class="form-grid">
+
+                <div class="form-group full">
+                    <label for="nomeAtletica">Nome <span class="required">*</span></label>
+                    <input type="text" th:field="*{nomeAtletica}" th:errorclass="is-invalid"
+                           maxlength="60" placeholder="Ex.: Atlética Sistemas para Internet" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('nomeAtletica')}" th:errors="*{nomeAtletica}">Erro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="curso">Curso representado</label>
+                    <select th:field="*{curso}" th:errorclass="is-invalid">
+                        <option value="">Nenhum (atlética geral)</option>
+                        <option th:each="c : ${cursos}" th:value="${c.idCurso}" th:text="${c.nomeCurso}">Curso</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="instagramAtletica">Instagram</label>
+                    <div class="input-prefix">
+                        <span class="prefix">@</span>
+                        <input type="text" th:field="*{instagramAtletica}" th:errorclass="is-invalid"
+                               maxlength="31" placeholder="usuario.da.atletica">
+                    </div>
+                    <span class="field-error" th:if="${#fields.hasErrors('instagramAtletica')}" th:errors="*{instagramAtletica}">Erro</span>
+                </div>
+
+                <div class="form-group full">
+                    <label for="descricaoAtletica">Descrição</label>
+                    <textarea th:field="*{descricaoAtletica}" th:errorclass="is-invalid" maxlength="200"
+                              placeholder="Conte um pouco sobre a atlética (opcional)"></textarea>
+                    <span class="field-error" th:if="${#fields.hasErrors('descricaoAtletica')}" th:errors="*{descricaoAtletica}">Erro</span>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title"><i class="fa-solid fa-image"></i> Logo</div>
+
+            <div class="photo-box">
+                <img class="photo-preview" id="previewLogo" alt="Logo da atlética"
+                     th:src="${atletica.idAtletica != null} ? @{/atleticas/logo/{id}(id=${atletica.idAtletica})} : null"
+                     th:hidden="${atletica.idAtletica == null}" hidden
+                     onerror="this.hidden = true; document.getElementById('iconeLogo').hidden = false;">
+                <div class="photo-icon" id="iconeLogo" th:hidden="${atletica.idAtletica != null}">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+
+                <div class="photo-content">
+                    <strong>Selecionar logo</strong>
+                    <small>Formatos aceitos: JPG, PNG, WEBP ou GIF. Tamanho máximo: 2 MB.</small>
+                    <span class="file-name" id="nomeLogo">Nenhum arquivo selecionado</span>
+                </div>
+
+                <input type="file" id="logo" name="logo" class="file-input"
+                       accept="image/jpeg,image/png,image/webp,image/gif"
+                       data-preview="previewLogo" data-icone="iconeLogo" data-nome="nomeLogo">
+                <label for="logo" class="btn btn-outline">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Escolher imagem
+                </label>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a th:href="@{/atleticas/listar}" href="#" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Salvar Atlética
+            </button>
+        </div>
+
+    </form>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Atléticas')}">
+    <title>Atléticas</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container">
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2>Atléticas</h2>
+            <p>Associações atléticas que vendem produtos na loja do sistema.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/loja}" href="#" class="btn btn-outline"><i class="fa-solid fa-store"></i> Ver loja</a>
+            <a th:href="@{/atleticas/criar}" href="#" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nova Atlética</a>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <div class="card">
+
+        <form class="toolbar" th:action="@{/atleticas/listar}" action="#" method="get" role="search">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" name="q" th:value="${q}" aria-label="Buscar atléticas"
+                       placeholder="Buscar por nome, descrição, Instagram ou curso">
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+            <a th:if="${q != null}" th:href="@{/atleticas/listar}" href="#" class="btn btn-secondary">Limpar</a>
+        </form>
+
+        <div class="result-info">
+            <th:block th:if="${q != null}">
+                <strong th:text="${pagina.totalElements}">0</strong> atlética(s) encontrada(s) para
+                “<strong th:text="${q}">termo</strong>”
+            </th:block>
+            <th:block th:if="${q == null}">
+                <strong th:text="${pagina.totalElements}">0</strong> atlética(s) cadastrada(s)
+            </th:block>
+        </div>
+
+        <div class="table-wrapper" th:unless="${#lists.isEmpty(atleticas)}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Logo</th>
+                    <th>Nome</th>
+                    <th>Curso</th>
+                    <th>Instagram</th>
+                    <th>Produtos</th>
+                    <th class="text-right">Ações</th>
+                </tr>
+                </thead>
+                <tbody th:attr="data-destacar=${q}">
+                <tr th:each="atletica : ${atleticas}">
+                    <td>
+                        <img th:if="${atletica.temLogo}" th:src="@{/atleticas/logo/{id}(id=${atletica.idAtletica})}"
+                             class="thumb" alt="Logo da atlética">
+                        <div th:unless="${atletica.temLogo}" class="thumb-vazia"><i class="fa-solid fa-trophy"></i></div>
+                    </td>
+                    <td>
+                        <span class="td-strong destacavel" th:text="${atletica.nomeAtletica}">Atlética</span>
+                        <span class="td-sub destacavel" th:if="${atletica.descricaoAtletica != null}"
+                              th:text="${atletica.descricaoAtletica}">Descrição</span>
+                    </td>
+                    <td class="destacavel" th:text="${atletica.curso != null ? atletica.curso.nomeCurso : 'Atlética geral'}">Curso</td>
+                    <td class="nowrap">
+                        <a th:if="${atletica.instagramAtletica != null}" target="_blank" rel="noopener"
+                           th:href="@{https://www.instagram.com/{usuario}/(usuario=${atletica.instagramAtletica})}" href="#">
+                            <i class="fa-brands fa-instagram"></i>
+                            <span class="destacavel" th:text="'@' + ${atletica.instagramAtletica}">@atletica</span>
+                        </a>
+                        <span th:if="${atletica.instagramAtletica == null}">—</span>
+                    </td>
+                    <td>
+                        <a class="badge badge-azul" th:href="@{/loja(atletica=${atletica.idAtletica})}" href="#"
+                           th:text="${atletica.quantidadeProdutos} + ' na loja'">0 na loja</a>
+                    </td>
+                    <td>
+                        <div class="td-actions">
+                            <a class="btn btn-outline btn-sm" href="#"
+                               th:href="@{/atleticas/editar/{id}(id=${atletica.idAtletica})}">
+                                <i class="fa-solid fa-pen"></i> <span>Editar</span>
+                            </a>
+                            <a class="btn btn-danger btn-sm" href="#"
+                               th:href="@{/atleticas/excluir/{id}(id=${atletica.idAtletica})}"
+                               th:attr="data-confirmar=|Deseja excluir a atlética ${atletica.nomeAtletica}?|">
+                                <i class="fa-solid fa-trash"></i> <span>Excluir</span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(atleticas)}">
+            <i class="fa-solid fa-trophy"></i>
+            <h3 th:text="${q != null} ? 'Nenhuma atlética encontrada' : 'Nenhuma atlética cadastrada'">Nenhuma atlética</h3>
+            <p th:text="${q != null} ? 'Confira o que foi digitado ou busque por outro termo.' : 'Cadastre uma atlética para poder cadastrar os produtos da loja.'">
+                Cadastre a primeira atlética.
+            </p>
+            <a th:href="@{/atleticas/criar}" href="#" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nova Atlética</a>
+        </div>
+
+        <div th:replace="~{fragments/layout :: paginacao(${pagina}, ${urlBase})}"></div>
+
+    </div>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

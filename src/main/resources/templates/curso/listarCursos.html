@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Cursos')}">
+    <title>Listar Cursos</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container">
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2>Lista de Cursos</h2>
+            <p>Consulte e gerencie os cursos cadastrados no sistema.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/cursos/criar}" href="#" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Novo Curso
+            </a>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <div class="card">
+
+        <form class="toolbar" th:action="@{/cursos/listar}" action="#" method="get" role="search">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" name="q" th:value="${q}" aria-label="Buscar cursos"
+                       placeholder="Buscar por nome ou descrição do curso">
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+            <a th:if="${q != null}" th:href="@{/cursos/listar}" href="#" class="btn btn-secondary">Limpar</a>
+        </form>
+
+        <div class="result-info">
+            <th:block th:if="${q != null}">
+                <strong th:text="${pagina.totalElements}">0</strong> curso(s) encontrado(s) para
+                “<strong th:text="${q}">termo</strong>”
+            </th:block>
+            <th:block th:if="${q == null}">
+                <strong th:text="${pagina.totalElements}">0</strong> curso(s) cadastrado(s)
+            </th:block>
+        </div>
+
+        <div class="table-wrapper" th:unless="${#lists.isEmpty(cursos)}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Descrição</th>
+                    <th>Carga Horária</th>
+                    <th class="text-right">Ações</th>
+                </tr>
+                </thead>
+                <tbody th:attr="data-destacar=${q}">
+                <tr th:each="curso : ${cursos}">
+                    <td class="td-strong destacavel" th:text="${curso.nomeCurso}">Sistemas para Internet</td>
+                    <td class="destacavel" th:text="${curso.descricaoCurso}">Descrição</td>
+                    <td class="nowrap">
+                        <i class="fa-regular fa-clock"></i>
+                        <span th:text="${curso.cargaHoraria}">2400</span> horas
+                    </td>
+                    <td>
+                        <div class="td-actions">
+                            <a th:href="@{/cursos/editar/{id}(id=${curso.idCurso})}" href="#" class="btn btn-outline btn-sm">
+                                <i class="fa-solid fa-pen"></i> <span>Editar</span>
+                            </a>
+                            <a th:href="@{/cursos/excluir/{id}(id=${curso.idCurso})}" href="#" class="btn btn-danger btn-sm"
+                               th:attr="data-confirmar=|Deseja excluir o curso ${curso.nomeCurso}?|">
+                                <i class="fa-solid fa-trash"></i> <span>Excluir</span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(cursos)}">
+            <i class="fa-solid fa-book-open"></i>
+            <h3 th:text="${q != null} ? 'Nenhum curso encontrado' : 'Nenhum curso cadastrado'">Nenhum curso</h3>
+            <p th:text="${q != null} ? 'Confira o que foi digitado ou busque por outro termo.' : 'Cadastre o primeiro curso para começar.'">
+                Cadastre o primeiro curso.
+            </p>
+            <a th:href="@{/cursos/criar}" href="#" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Novo Curso</a>
+        </div>
+
+        <div th:replace="~{fragments/layout :: paginacao(${pagina}, ${urlBase})}"></div>
+
+    </div>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

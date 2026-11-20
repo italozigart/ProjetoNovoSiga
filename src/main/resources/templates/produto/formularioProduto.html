@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head(${produto.idProduto == null ? 'Novo produto' : 'Editar produto'})}">
+    <title>Formulário de Produto</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container container-estreito">
+
+    <nav class="breadcrumb">
+        <a th:href="@{/produtos/listar}" href="#">Produtos</a>
+        <i class="fa-solid fa-chevron-right"></i>
+        <span th:text="${produto.idProduto == null} ? 'Novo produto' : 'Editar produto'">Novo produto</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2 th:text="${produto.idProduto == null} ? 'Cadastrar produto' : 'Editar produto'">Formulário de Produto</h2>
+            <p>Produtos vendidos pelas atléticas. Campos com <span class="required">*</span> são obrigatórios.</p>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <div class="alert alert-info" th:if="${#lists.isEmpty(atleticas)}" style="margin-bottom:18px">
+        <i class="fa-solid fa-circle-info"></i>
+        <span>Nenhuma atlética cadastrada. <a th:href="@{/atleticas/criar}" href="#">Cadastre uma atlética</a> antes de cadastrar produtos.</span>
+    </div>
+
+    <form class="card form-card" th:action="@{/produtos/salvar}" action="#" method="post"
+          th:object="${produto}" enctype="multipart/form-data">
+
+        <input type="hidden" th:field="*{idProduto}">
+
+        <div class="alert alert-error" th:if="${#fields.hasErrors('*')}" style="margin-bottom:22px">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>Corrija os campos destacados em vermelho.</span>
+        </div>
+
+        <!-- DADOS DO PRODUTO -->
+        <div class="section">
+            <div class="section-title"><i class="fa-solid fa-box"></i> Dados do produto</div>
+
+            <div class="form-grid">
+
+                <div class="form-group full">
+                    <label for="descricaoProduto">Descrição <span class="required">*</span></label>
+                    <input type="text" th:field="*{descricaoProduto}" th:errorclass="is-invalid"
+                           maxlength="100" placeholder="Ex.: Camiseta Oficial 2026" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('descricaoProduto')}" th:errors="*{descricaoProduto}">Erro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="atletica">Atlética <span class="required">*</span></label>
+                    <select th:field="*{atletica}" th:errorclass="is-invalid" required>
+                        <option value="">Selecione a atlética</option>
+                        <option th:each="a : ${atleticas}" th:value="${a.idAtletica}" th:text="${a.nomeAtletica}">Atlética</option>
+                    </select>
+                    <span class="field-error" th:if="${#fields.hasErrors('atletica')}" th:errors="*{atletica}">Erro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoriaProduto">Categoria <span class="required">*</span></label>
+                    <input type="text" th:field="*{categoriaProduto}" th:errorclass="is-invalid"
+                           list="listaCategorias" maxlength="30" placeholder="Escolha ou digite" required>
+                    <datalist id="listaCategorias">
+                        <option th:each="c : ${categorias}" th:value="${c}">Camiseta</option>
+                    </datalist>
+                    <span class="field-error" th:if="${#fields.hasErrors('categoriaProduto')}" th:errors="*{categoriaProduto}">Erro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="marcaProduto">Marca <span class="required">*</span></label>
+                    <input type="text" th:field="*{marcaProduto}" th:errorclass="is-invalid"
+                           maxlength="50" placeholder="Ex.: Atlética SI" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('marcaProduto')}" th:errors="*{marcaProduto}">Erro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="modeloProduto">Modelo <span class="required">*</span></label>
+                    <input type="text" th:field="*{modeloProduto}" th:errorclass="is-invalid"
+                           maxlength="50" placeholder="Ex.: Dry-fit unissex" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('modeloProduto')}" th:errors="*{modeloProduto}">Erro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="valorProduto">Valor <span class="required">*</span></label>
+                    <div class="input-prefix">
+                        <span class="prefix">R$</span>
+                        <input type="number" th:field="*{valorProduto}" th:errorclass="is-invalid"
+                               step="0.01" min="0.01" placeholder="0,00" required>
+                    </div>
+                    <span class="field-error" th:if="${#fields.hasErrors('valorProduto')}" th:errors="*{valorProduto}">Erro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="estoqueProduto">Quantidade em estoque <span class="required">*</span></label>
+                    <div class="input-unit">
+                        <input type="number" th:field="*{estoqueProduto}" th:errorclass="is-invalid"
+                               step="1" min="0" placeholder="Ex.: 20" required>
+                        <span class="unit">unid.</span>
+                    </div>
+                    <span class="field-error" th:if="${#fields.hasErrors('estoqueProduto')}" th:errors="*{estoqueProduto}">Erro</span>
+                    <span class="field-hint">Com estoque 0 o produto aparece como "Esgotado" na loja.</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- IMAGEM -->
+        <div class="section">
+            <div class="section-title"><i class="fa-solid fa-camera"></i> Imagem do produto</div>
+
+            <div class="photo-box">
+                <img class="photo-preview" id="previewImagem" alt="Imagem do produto"
+                     th:src="${produto.idProduto != null} ? @{/produtos/imagem/{id}(id=${produto.idProduto})} : null"
+                     th:hidden="${produto.idProduto == null}" hidden
+                     onerror="this.hidden = true; document.getElementById('iconeImagem').hidden = false;">
+                <div class="photo-icon" id="iconeImagem" th:hidden="${produto.idProduto != null}">
+                    <i class="fa-solid fa-image"></i>
+                </div>
+
+                <div class="photo-content">
+                    <strong>Selecionar imagem</strong>
+                    <small>Formatos aceitos: JPG, PNG, WEBP ou GIF. Tamanho máximo: 2 MB.</small>
+                    <span class="file-name" id="nomeImagem">Nenhum arquivo selecionado</span>
+                </div>
+
+                <input type="file" id="imagem" name="imagem" class="file-input"
+                       accept="image/jpeg,image/png,image/webp,image/gif"
+                       data-preview="previewImagem" data-icone="iconeImagem" data-nome="nomeImagem">
+                <label for="imagem" class="btn btn-outline">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Escolher imagem
+                </label>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a th:href="@{/produtos/listar}" href="#" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Salvar Produto
+            </button>
+        </div>
+
+    </form>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

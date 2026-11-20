@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head(${disciplina.idDisciplina == null ? 'Nova disciplina' : 'Editar disciplina'})}">
+    <title>Formulário de Disciplina</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container container-estreito">
+
+    <nav class="breadcrumb">
+        <a th:href="@{/disciplinas/listar}" href="#">Disciplinas</a>
+        <i class="fa-solid fa-chevron-right"></i>
+        <span th:text="${disciplina.idDisciplina == null} ? 'Nova disciplina' : 'Editar disciplina'">Nova disciplina</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2 th:text="${disciplina.idDisciplina == null} ? 'Cadastrar disciplina' : 'Editar disciplina'">Formulário de Disciplina</h2>
+            <p>Preencha as informações abaixo. Campos com <span class="required">*</span> são obrigatórios.</p>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <form class="card form-card" th:action="@{/disciplinas/salvar}" action="#" method="post" th:object="${disciplina}">
+
+        <input type="hidden" th:field="*{idDisciplina}">
+
+        <div class="section">
+            <div class="section-title"><i class="fa-solid fa-book"></i> Dados da disciplina</div>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="nomeDisciplina">Nome da Disciplina <span class="required">*</span></label>
+                    <input type="text" th:field="*{nomeDisciplina}" th:errorclass="is-invalid"
+                           maxlength="50" placeholder="Digite o nome da disciplina" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('nomeDisciplina')}" th:errors="*{nomeDisciplina}">Erro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="siglaDisciplina">Sigla <span class="required">*</span></label>
+                    <input type="text" th:field="*{siglaDisciplina}" th:errorclass="is-invalid"
+                           maxlength="10" placeholder="Ex.: BD" style="text-transform:uppercase" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('siglaDisciplina')}" th:errors="*{siglaDisciplina}">Erro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="cargaHorariaDisciplina">Carga Horária <span class="required">*</span></label>
+                    <div class="input-unit">
+                        <input type="number" th:field="*{cargaHorariaDisciplina}" th:errorclass="is-invalid"
+                               min="1" placeholder="Ex.: 80" required>
+                        <span class="unit">horas</span>
+                    </div>
+                    <span class="field-error" th:if="${#fields.hasErrors('cargaHorariaDisciplina')}" th:errors="*{cargaHorariaDisciplina}">Erro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="curso">Curso <span class="required">*</span></label>
+                    <select th:field="*{curso}" th:errorclass="is-invalid" required>
+                        <option value="">Selecione o curso</option>
+                        <option th:each="c : ${cursos}" th:value="${c.idCurso}" th:text="${c.nomeCurso}">Curso</option>
+                    </select>
+                    <span class="field-error" th:if="${#fields.hasErrors('curso')}" th:errors="*{curso}">Erro</span>
+                    <span class="field-hint" th:if="${#lists.isEmpty(cursos)}">
+                        Nenhum curso cadastrado. <a th:href="@{/cursos/criar}" href="#">Cadastre um curso</a>.
+                    </span>
+                </div>
+
+                <div class="form-group full">
+                    <label for="professor">Professor <span class="required">*</span></label>
+                    <select th:field="*{professor}" th:errorclass="is-invalid" required>
+                        <option value="">Selecione o professor</option>
+                        <option th:each="p : ${professores}" th:value="${p.idProfessor}" th:text="${p.nomeProfessor}">Professor</option>
+                    </select>
+                    <span class="field-error" th:if="${#fields.hasErrors('professor')}" th:errors="*{professor}">Erro</span>
+                    <span class="field-hint" th:if="${#lists.isEmpty(professores)}">
+                        Nenhum professor cadastrado. <a th:href="@{/professores/criar}" href="#">Cadastre um professor</a>.
+                    </span>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a th:href="@{/disciplinas/listar}" href="#" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Salvar Disciplina
+            </button>
+        </div>
+
+    </form>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

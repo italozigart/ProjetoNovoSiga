@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Bem-vindo')}">
+    <title>Sistema NovoSiga</title>
+</head>
+
+<body>
+
+<main class="auth-page">
+
+    <div class="auth-card">
+
+        <div class="auth-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+        <h1>Sistema Novo Siga</h1>
+        <p class="sub">Gestão acadêmica e loja das atléticas em um só lugar</p>
+
+        <ul class="landing-recursos">
+            <li><i class="fa-solid fa-user-graduate"></i> Cadastro de alunos, professores, cursos e disciplinas</li>
+            <li><i class="fa-solid fa-store"></i> Loja com os produtos das atléticas</li>
+            <li><i class="fa-solid fa-cart-shopping"></i> Carrinho de compras e controle de estoque</li>
+            <li><i class="fa-solid fa-magnifying-glass"></i> Busca em todo o sistema com sugestões</li>
+        </ul>
+
+        <div class="landing-acoes">
+            <form th:action="@{/login}" action="#" method="get">
+                <button type="submit" class="btn btn-primary btn-lg btn-block">
+                    <i class="fa-solid fa-right-to-bracket"></i> Acesso ao Sistema
+                </button>
+            </form>
+            <form th:action="@{/usuarios/criar}" action="#" method="get">
+                <button type="submit" class="btn btn-outline btn-lg btn-block">
+                    <i class="fa-solid fa-user-plus"></i> Cadastre-se
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+</main>
+
+</body>
+</html>

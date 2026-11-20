@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Novo pedido (balcão)')}">
+    <title>Formulário de Pedido</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container">
+
+    <nav class="breadcrumb">
+        <a th:href="@{/pedidos/listar}" href="#">Pedidos</a>
+        <i class="fa-solid fa-chevron-right"></i>
+        <span>Novo pedido (balcão)</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2>Formulário de Pedido</h2>
+            <p>Venda direta no balcão: selecione o aluno e adicione os produtos que farão parte do pedido.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/loja}" href="#" class="btn btn-outline"><i class="fa-solid fa-store"></i> Comprar pela loja</a>
+        </div>
+    </div>
+
+    <!-- mensagens exibidas pelo JavaScript -->
+    <div id="mensagem-pedido" class="alerts" aria-live="polite"></div>
+
+    <section class="card">
+        <div class="card-body">
+
+            <!-- I. ALUNO -->
+            <div class="section">
+                <div class="section-title"><i class="fa-solid fa-user-graduate"></i> I. Identificação do aluno</div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="aluno">Aluno <span class="required">*</span></label>
+                        <input list="listaAlunos" id="aluno" type="text" autocomplete="off"
+                               placeholder="Digite o nome ou código do aluno">
+                        <datalist id="listaAlunos">
+                            <option th:each="aluno : ${alunos}"
+                                    th:value="${aluno.idAluno + ' - ' + aluno.nomeAluno}">1 - Aluno</option>
+                        </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="formaPagamento">Forma de pagamento <span class="required">*</span></label>
+                        <select id="formaPagamento">
+                            <option th:each="forma : ${formasPagamento}" th:value="${forma}" th:text="${forma}">PIX</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- II. PRODUTOS -->
+            <div class="section">
+                <div class="section-title"><i class="fa-solid fa-box"></i> II. Adicione produtos ao pedido</div>
+
+                <div class="linha-produto">
+                    <div class="form-group">
+                        <label for="produto">Produto</label>
+                        <input list="listaProdutos" id="produto" type="text" autocomplete="off"
+                               placeholder="Digite o nome ou código do produto">
+                        <datalist id="listaProdutos">
+                            <option th:each="produto : ${produtos}"
+                                    th:value="${produto.idProduto + ' - ' + produto.descricaoProduto}"
+                                    th:attr="data-preco=${produto.valorProduto},data-estoque=${produto.estoqueDisponivel}">1 - Produto</option>
+                        </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quantidade">Quantidade</label>
+                        <input type="number" id="quantidade" min="1" value="1">
+                    </div>
+
+                    <button type="button" class="btn btn-primary" id="btnAdicionar">
+                        <i class="fa-solid fa-plus"></i> Adicionar
+                    </button>
+                </div>
+            </div>
+
+            <!-- III. TABELA -->
+            <div class="section" style="margin-bottom:0">
+                <div class="section-title"><i class="fa-solid fa-list"></i> III. Produtos do pedido</div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Foto</th>
+                            <th>Produto</th>
+                            <th>Quantidade</th>
+                            <th>Preço</th>
+                            <th>Subtotal</th>
+                            <th class="text-right">Ação</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tabela-itens"></tbody>
+                    </table>
+                </div>
+
+                <div class="total-pedido">
+                    <span>Total do Pedido</span>
+                    <strong id="totalPedido">R$ 0,00</strong>
+                </div>
+            </div>
+
+            <!-- AÇÕES -->
+            <div class="form-actions">
+                <a th:href="@{/pedidos/listar}" href="#" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> Voltar
+                </a>
+                <button type="button" class="btn btn-success" id="btnSalvar">
+                    <i class="fa-solid fa-check"></i> Confirmar e Salvar Pedido
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+<script>
+    (function () {
+        'use strict';
+
+        /* Itens do pedido: { idProduto, nome, preco, quantidade, estoque } */
+        const itens = [];
+
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        /* Procura no datalist a opção com exatamente o texto digitado */
+        function buscarOpcao(idLista, valor) {
+            const opcoes = document.querySelectorAll('#' + idLista + ' option');
+            for (let i = 0; i < opcoes.length; i++) {
+                if (opcoes[i].value === valor) {
+                    return opcoes[i];
+                }
+            }
+            return null;
+        }
+
+        /* Mostra (ou limpa) a mensagem no topo da página */
+        function mostrarMensagem(texto, tipo) {
+            const area = document.getElementById('mensagem-pedido');
+            area.innerHTML = '';
+            if (!texto) {
+                return;
+            }
+            const alerta = document.createElement('div');
+            alerta.className = 'alert ' + (tipo === 'sucesso' ? 'alert-success' : 'alert-error');
+            const icone = document.createElement('i');
+            icone.className = 'fa-solid ' + (tipo === 'sucesso' ? 'fa-circle-check' : 'fa-circle-exclamation');
+            const span = document.createElement('span');
+            span.textContent = texto;
+            alerta.appendChild(icone);
+            alerta.appendChild(span);
+            area.appendChild(alerta);
+            area.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        /* ADICIONAR ITEM */
+        function adicionarItem() {
+            const campoProduto = document.getElementById('produto');
+            const campoQuantidade = document.getElementById('quantidade');
+            const opcao = buscarOpcao('listaProdutos', campoProduto.value);
+            const quantidade = parseInt(campoQuantidade.value, 10);
+
+            if (!opcao) {
+                mostrarMensagem('Produto inválido! Selecione um produto da lista.');
+                return;
+            }
+            if (isNaN(quantidade) || quantidade < 1) {
+                mostrarMensagem('Informe uma quantidade válida.');
+                return;
+            }
+
+            const partes = opcao.value.split(' - ');
+            const idProduto = parseInt(partes[0], 10);
+            const estoque = parseInt(opcao.getAttribute('data-estoque'), 10) || 0;
+            const preco = parseFloat(opcao.getAttribute('data-preco'));
+            const existente = itens.find(function (item) { return item.idProduto === idProduto; });
+            const novaQuantidade = quantidade + (existente ? existente.quantidade : 0);
+
+            if (novaQuantidade > estoque) {
+                mostrarMensagem('Estoque insuficiente: há ' + estoque + ' unidade(s) de "' + partes.slice(1).join(' - ') + '".');
+                return;
+            }
+
+            if (existente) {
+                existente.quantidade = novaQuantidade;
+            } else {
+                itens.push({
+                    idProduto: idProduto,
+                    nome: partes.slice(1).join(' - '),
+                    preco: preco,
+                    quantidade: quantidade,
+                    estoque: estoque
+                });
+            }
+
+            campoProduto.value = '';
+            campoQuantidade.value = '1';
+            mostrarMensagem('');
+            renderizarTabela();
+        }
+
+        /* MONTA A TABELA (usa textContent para não executar HTML digitado) */
+        function renderizarTabela() {
+            const corpo = document.getElementById('tabela-itens');
+            corpo.innerHTML = '';
+            let total = 0;
+
+            if (itens.length === 0) {
+                const linha = document.createElement('tr');
+                const celula = document.createElement('td');
+                celula.colSpan = 6;
+                celula.className = 'vazio';
+                celula.textContent = 'Nenhum produto adicionado ao pedido.';
+                linha.appendChild(celula);
+                corpo.appendChild(linha);
+            }
+
+            itens.forEach(function (item, indice) {
+                const subtotal = item.preco * item.quantidade;
+                total += subtotal;
+
+                const linha = document.createElement('tr');
+
+                // Foto
+                const tdFoto = document.createElement('td');
+                const imagem = document.createElement('img');
+                imagem.className = 'thumb';
+                imagem.alt = '';
+                imagem.src = '/produtos/imagem/' + item.idProduto;
+                imagem.onerror = function () {
+                    const vazio = document.createElement('div');
+                    vazio.className = 'thumb-vazia';
+                    vazio.innerHTML = '<i class="fa-solid fa-box"></i>';
+                    imagem.replaceWith(vazio);
+                };
+                tdFoto.appendChild(imagem);
+
+                // Produto
+                const tdNome = document.createElement('td');
+                tdNome.className = 'td-strong';
+                tdNome.textContent = item.nome;
+
+                // Quantidade (editável)
+                const tdQuantidade = document.createElement('td');
+                const campo = document.createElement('input');
+                campo.type = 'number';
+                campo.min = '1';
+                campo.max = String(item.estoque);
+                campo.value = String(item.quantidade);
+                campo.className = 'campo';
+                campo.style.width = '90px';
+                campo.addEventListener('change', function () {
+                    let quantidade = parseInt(campo.value, 10);
+                    if (isNaN(quantidade) || quantidade < 1) {
+                        quantidade = 1;
+                    }
+                    if (quantidade > item.estoque) {
+                        quantidade = item.estoque;
+                        mostrarMensagem('Estoque insuficiente: há ' + item.estoque + ' unidade(s) de "' + item.nome + '".');
+                    }
+                    item.quantidade = quantidade;
+                    renderizarTabela();
+                });
+                tdQuantidade.appendChild(campo);
+
+                // Preço e subtotal
+                const tdPreco = document.createElement('td');
+                tdPreco.textContent = formatarMoeda(item.preco);
+                const tdSubtotal = document.createElement('td');
+                tdSubtotal.className = 'td-strong';
+                tdSubtotal.textContent = formatarMoeda(subtotal);
+
+                // Remover
+                const tdAcao = document.createElement('td');
+                tdAcao.className = 'text-right';
+                const botao = document.createElement('button');
+                botao.type = 'button';
+                botao.className = 'btn btn-danger btn-sm';
+                botao.innerHTML = '<i class="fa-solid fa-trash"></i> Remover';
+                botao.addEventListener('click', function () {
+                    itens.splice(indice, 1);
+                    renderizarTabela();
+                });
+                tdAcao.appendChild(botao);
+
+                linha.appendChild(tdFoto);
+                linha.appendChild(tdNome);
+                linha.appendChild(tdQuantidade);
+                linha.appendChild(tdPreco);
+                linha.appendChild(tdSubtotal);
+                linha.appendChild(tdAcao);
+                corpo.appendChild(linha);
+            });
+
+            document.getElementById('totalPedido').textContent = formatarMoeda(total);
+        }
+
+        /* SALVAR: envia JSON para o Spring Boot (POST /pedidos) */
+        function salvarPedido() {
+            const opcaoAluno = buscarOpcao('listaAlunos', document.getElementById('aluno').value);
+
+            if (!opcaoAluno) {
+                mostrarMensagem('Aluno inválido! Selecione um aluno da lista.');
+                return;
+            }
+            if (itens.length === 0) {
+                mostrarMensagem('Adicione ao menos um produto ao pedido!');
+                return;
+            }
+
+            const pedido = {
+                idAluno: parseInt(opcaoAluno.value.split(' - ')[0], 10),
+                formaPagamento: document.getElementById('formaPagamento').value,
+                itens: itens.map(function (item) {
+                    return { idProduto: item.idProduto, quantidade: item.quantidade };
+                })
+            };
+
+            const botao = document.getElementById('btnSalvar');
+            botao.disabled = true;
+
+            fetch('/pedidos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify(pedido)
+            })
+                .then(function (resposta) {
+                    return resposta.json()
+                        .catch(function () { return {}; })
+                        .then(function (dados) { return { ok: resposta.ok, dados: dados }; });
+                })
+                .then(function (resultado) {
+                    if (!resultado.ok || !resultado.dados.url) {
+                        throw new Error(resultado.dados.erro
+                            || 'Não foi possível salvar o pedido. Verifique se você ainda está logado.');
+                    }
+                    window.location.href = resultado.dados.url + '?criado=1';
+                })
+                .catch(function (erro) {
+                    mostrarMensagem(erro.message);
+                    botao.disabled = false;
+                });
+        }
+
+        document.getElementById('btnAdicionar').addEventListener('click', adicionarItem);
+        document.getElementById('btnSalvar').addEventListener('click', salvarPedido);
+        document.getElementById('produto').addEventListener('keydown', function (evento) {
+            if (evento.key === 'Enter') {
+                evento.preventDefault();
+                adicionarItem();
+            }
+        });
+
+        renderizarTabela();
+    })();
+</script>
+
+</body>
+</html>

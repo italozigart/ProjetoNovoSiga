@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<!--
+    =========================================================
+    FRAGMENTOS REAPROVEITADOS EM TODAS AS TELAS (Thymeleaf)
+    =========================================================
+    head(titulo)               -> <head> com fontes, ícones e o CSS do sistema
+    cabecalho                  -> topo: logo, busca geral, carrinho, usuário e menu
+    mensagens                  -> alertas de sucesso/erro (flash attributes)
+    paginacao(pagina, urlBase) -> navegação entre as páginas das listagens
+    rodape                     -> rodapé
+    scripts                    -> JavaScript do sistema
+
+    Exemplo de uso numa página:
+        <head th:replace="~{fragments/layout :: head('Alunos')}"></head>
+        <header th:replace="~{fragments/layout :: cabecalho}"></header>
+-->
+
+<head th:fragment="head(titulo)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${titulo} + ' • Novo Siga'">Novo Siga</title>
+
+    <!-- Fonte -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- Estilos do sistema (src/main/resources/static/css/novosiga.css) -->
+    <link rel="stylesheet" th:href="@{/css/novosiga.css}" href="../../static/css/novosiga.css">
+</head>
+
+<body>
+
+<!-- =========================================================
+     CABEÇALHO + MENU
+========================================================== -->
+<header class="site-header" th:fragment="cabecalho">
+
+    <div class="topbar">
+        <div class="topbar-inner">
+
+            <a class="brand" th:href="@{/home}" href="#">
+                <span class="brand-logo"><i class="fa-solid fa-graduation-cap"></i></span>
+                <span class="brand-text">
+                    <strong>Novo Siga</strong>
+                    <small>Gestão Acadêmica e Atléticas</small>
+                </span>
+            </a>
+
+            <!-- BUSCA GERAL (procura em todo o sistema + sugestões enquanto digita) -->
+            <form class="global-search" th:action="@{/busca}" action="#" method="get" role="search" autocomplete="off">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input type="search" name="q" id="busca-global"
+                       placeholder="Buscar alunos, professores, disciplinas, produtos..."
+                       aria-label="Buscar no sistema" aria-autocomplete="list"
+                       aria-controls="sugestoes" aria-expanded="false"
+                       th:value="${termoBuscaGlobal}">
+                <ul class="search-suggestions" id="sugestoes" role="listbox" hidden></ul>
+            </form>
+
+            <div class="topbar-actions">
+
+                <a class="cart-button" th:href="@{/carrinho}" href="#" title="Carrinho de compras"
+                   aria-label="Carrinho de compras">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span class="cart-badge" th:if="${qtdCarrinho != null and qtdCarrinho > 0}"
+                          th:text="${qtdCarrinho}">2</span>
+                </a>
+
+                <span class="user-chip" th:if="${usuarioLogado != null}">
+                    <i class="fa-solid fa-circle-user"></i>
+                    <span th:text="${usuarioLogado}">Usuário</span>
+                </span>
+
+                <form th:action="@{/logout}" action="#" method="post">
+                    <button type="submit" class="btn-logout" title="Sair do sistema">
+                        <i class="fa-solid fa-right-from-bracket"></i><span>Sair</span>
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MENU PRINCIPAL (o item da página atual fica destacado) -->
+    <nav class="main-nav" aria-label="Menu principal">
+        <div class="main-nav-inner" th:with="uri=${uriAtual != null ? uriAtual : ''}">
+
+            <a th:href="@{/home}" href="#" th:classappend="${uri == '/home'} ? 'active'">
+                <i class="fa-solid fa-house"></i>Início
+            </a>
+
+            <span class="nav-sep"></span>
+
+            <a th:href="@{/alunos/listar}" href="#" th:classappend="${#strings.startsWith(uri, '/alunos')} ? 'active'">
+                <i class="fa-solid fa-user-graduate"></i>Alunos
+            </a>
+            <a th:href="@{/professores/listar}" href="#" th:classappend="${#strings.startsWith(uri, '/professores')} ? 'active'">
+                <i class="fa-solid fa-chalkboard-user"></i>Professores
+            </a>
+            <a th:href="@{/cursos/listar}" href="#" th:classappend="${#strings.startsWith(uri, '/cursos')} ? 'active'">
+                <i class="fa-solid fa-book-open"></i>Cursos
+            </a>
+            <a th:href="@{/disciplinas/listar}" href="#" th:classappend="${#strings.startsWith(uri, '/disciplinas')} ? 'active'">
+                <i class="fa-solid fa-book"></i>Disciplinas
+            </a>
+
+            <span class="nav-sep"></span>
+
+            <a th:href="@{/loja}" href="#" th:classappend="${#strings.startsWith(uri, '/loja') or #strings.startsWith(uri, '/carrinho')} ? 'active'">
+                <i class="fa-solid fa-store"></i>Loja
+            </a>
+            <a th:href="@{/atleticas/listar}" href="#" th:classappend="${#strings.startsWith(uri, '/atleticas')} ? 'active'">
+                <i class="fa-solid fa-trophy"></i>Atléticas
+            </a>
+            <a th:href="@{/produtos/listar}" href="#" th:classappend="${#strings.startsWith(uri, '/produtos')} ? 'active'">
+                <i class="fa-solid fa-box"></i>Produtos
+            </a>
+            <a th:href="@{/pedidos/listar}" href="#" th:classappend="${#strings.startsWith(uri, '/pedidos')} ? 'active'">
+                <i class="fa-solid fa-receipt"></i>Pedidos
+            </a>
+
+        </div>
+    </nav>
+
+</header>
+
+<!-- =========================================================
+     MENSAGENS (sucesso / erro)
+========================================================== -->
+<th:block th:fragment="mensagens">
+    <div class="alerts" th:if="${sucesso != null or erro != null}">
+
+        <div class="alert alert-success" role="status" th:if="${sucesso != null}" data-auto-fechar>
+            <i class="fa-solid fa-circle-check"></i>
+            <span th:text="${sucesso}">Registro salvo com sucesso!</span>
+            <button type="button" class="alert-close" aria-label="Fechar">&times;</button>
+        </div>
+
+        <div class="alert alert-error" role="alert" th:if="${erro != null}">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span th:text="${erro}">Ocorreu um erro.</span>
+            <button type="button" class="alert-close" aria-label="Fechar">&times;</button>
+        </div>
+
+    </div>
+</th:block>
+
+<!-- =========================================================
+     PAGINAÇÃO
+     pagina  = objeto Page do Spring Data (número, total de páginas...)
+     urlBase = endereço da listagem com a busca atual (ex.: /alunos/listar?q=ana)
+========================================================== -->
+<th:block th:fragment="paginacao(pagina, urlBase)">
+    <nav class="pagination" aria-label="Paginação"
+         th:if="${pagina != null and pagina.totalPages > 1}"
+         th:with="inicio=${pagina.number > 2 ? pagina.number - 2 : 0},
+                  fim=${pagina.number + 2 < pagina.totalPages - 1 ? pagina.number + 2 : pagina.totalPages - 1}">
+
+        <a th:href="@{${urlBase}(pagina=${pagina.number - 1})}" href="#"
+           th:classappend="${pagina.first} ? 'desabilitado'" aria-label="Página anterior">
+            <i class="fa-solid fa-chevron-left"></i>
+        </a>
+
+        <a th:if="${inicio > 0}" th:href="@{${urlBase}(pagina=0)}" href="#">1</a>
+        <span class="reticencias" th:if="${inicio > 1}">…</span>
+
+        <th:block th:each="i : ${#numbers.sequence(inicio, fim)}">
+            <span class="atual" th:if="${i == pagina.number}" th:text="${i + 1}" aria-current="page">1</span>
+            <a th:unless="${i == pagina.number}" th:href="@{${urlBase}(pagina=${i})}" href="#" th:text="${i + 1}">2</a>
+        </th:block>
+
+        <span class="reticencias" th:if="${fim < pagina.totalPages - 2}">…</span>
+        <a th:if="${fim < pagina.totalPages - 1}" th:href="@{${urlBase}(pagina=${pagina.totalPages - 1})}" href="#"
+           th:text="${pagina.totalPages}">9</a>
+
+        <a th:href="@{${urlBase}(pagina=${pagina.number + 1})}" href="#"
+           th:classappend="${pagina.last} ? 'desabilitado'" aria-label="Próxima página">
+            <i class="fa-solid fa-chevron-right"></i>
+        </a>
+    </nav>
+</th:block>
+
+<!-- =========================================================
+     RODAPÉ
+========================================================== -->
+<footer class="footer" th:fragment="rodape">
+    Sistema Novo Siga • Gestão Acadêmica e Loja das Atléticas
+</footer>
+
+<!-- =========================================================
+     JAVASCRIPT (src/main/resources/static/js/novosiga.js)
+========================================================== -->
+<th:block th:fragment="scripts">
+    <script th:src="@{/js/novosiga.js}" src="../../static/js/novosiga.js"></script>
+</th:block>
+
+</body>
+</html>

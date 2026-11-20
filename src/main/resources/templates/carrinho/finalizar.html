@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Finalizar compra')}">
+    <title>Finalizar compra</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container">
+
+    <div class="etapas">
+        <span class="etapa feita"><span class="num"><i class="fa-solid fa-check"></i></span> Carrinho</span>
+        <span class="etapa-linha"></span>
+        <span class="etapa atual"><span class="num">2</span> Aluno e pagamento</span>
+        <span class="etapa-linha"></span>
+        <span class="etapa"><span class="num">3</span> Pedido confirmado</span>
+    </div>
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2>Finalizar compra</h2>
+            <p>Informe o aluno que está comprando e a forma de pagamento.</p>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <form class="carrinho-layout" th:action="@{/carrinho/finalizar}" action="#" method="post">
+
+        <section class="card">
+            <div class="card-body">
+
+                <!-- ALUNO -->
+                <div class="section">
+                    <div class="section-title"><i class="fa-solid fa-user-graduate"></i> Aluno comprador</div>
+
+                    <div class="alert alert-info" th:if="${#lists.isEmpty(alunos)}">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Nenhum aluno cadastrado. <a th:href="@{/alunos/criar}" href="#">Cadastre um aluno</a> para finalizar a compra.</span>
+                    </div>
+
+                    <th:block th:unless="${#lists.isEmpty(alunos)}">
+                        <div class="form-group" style="margin-bottom:12px">
+                            <label for="filtroAluno">Encontre o aluno</label>
+                            <div class="search-box">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="search" id="filtroAluno" placeholder="Digite o nome ou o CPF para filtrar a lista"
+                                       data-filtrar-select="idAluno" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="idAluno">Selecione o aluno <span class="required">*</span></label>
+                            <select id="idAluno" name="idAluno" size="6" required>
+                                <option th:each="a : ${alunos}" th:value="${a.idAluno}"
+                                        th:text="${a.nomeAluno} + ' — CPF ' + ${a.cpfFormatado}"
+                                        th:attr="data-busca=${a.cpfAluno}">Aluno — CPF 000.000.000-00</option>
+                            </select>
+                        </div>
+                    </th:block>
+                </div>
+
+                <!-- PAGAMENTO -->
+                <div class="section" style="margin-bottom:0">
+                    <div class="section-title"><i class="fa-solid fa-credit-card"></i> Forma de pagamento</div>
+
+                    <div class="pagamentos">
+                        <div class="pagamento" th:each="forma, status : ${formasPagamento}">
+                            <input type="radio" name="formaPagamento" th:id="'pagamento' + ${status.index}"
+                                   th:value="${forma}" th:checked="${status.first}" required>
+                            <label th:for="'pagamento' + ${status.index}">
+                                <i class="fa-solid"
+                                   th:classappend="${forma == 'PIX'} ? 'fa-qrcode' : (${forma == 'Dinheiro'} ? 'fa-money-bill-wave' : 'fa-credit-card')"></i>
+                                <span th:text="${forma}">PIX</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- RESUMO -->
+        <aside class="card resumo">
+            <div class="card-body">
+                <h3 class="resumo-titulo">Seu pedido</h3>
+
+                <ul class="mini-itens">
+                    <li th:each="item : ${resumo.itens}">
+                        <span>
+                            <strong th:text="${item.quantidade} + 'x'">1x</strong>
+                            <span th:text="${item.produto.descricaoProduto}">Produto</span>
+                        </span>
+                        <span th:text="'R$ ' + ${#numbers.formatDecimal(item.subtotal, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</span>
+                    </li>
+                </ul>
+
+                <div class="resumo-total">
+                    <span>Total</span>
+                    <strong th:text="'R$ ' + ${#numbers.formatDecimal(resumo.total, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</strong>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-lg btn-block" th:disabled="${#lists.isEmpty(alunos)}">
+                    <i class="fa-solid fa-check"></i> Confirmar pedido
+                </button>
+                <a class="btn btn-secondary btn-block" th:href="@{/carrinho}" href="#">
+                    <i class="fa-solid fa-arrow-left"></i> Voltar ao carrinho
+                </a>
+            </div>
+        </aside>
+
+    </form>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Professores')}">
+    <title>Listar Professores</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container">
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2>Lista de Professores</h2>
+            <p>Visualize e gerencie os professores cadastrados.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/professores/criar}" href="#" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Novo Professor
+            </a>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <div class="card">
+
+        <!-- BARRA DE BUSCA -->
+        <form class="toolbar" th:action="@{/professores/listar}" action="#" method="get" role="search">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" name="q" th:value="${q}" aria-label="Buscar professores"
+                       placeholder="Buscar por nome, CPF, RG, telefone, endereço ou graduação">
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+            <a th:if="${q != null}" th:href="@{/professores/listar}" href="#" class="btn btn-secondary">Limpar</a>
+        </form>
+
+        <div class="result-info">
+            <th:block th:if="${q != null}">
+                <strong th:text="${pagina.totalElements}">0</strong> professor(es) encontrado(s) para
+                “<strong th:text="${q}">termo</strong>”
+            </th:block>
+            <th:block th:if="${q == null}">
+                <strong th:text="${pagina.totalElements}">0</strong> professor(es) cadastrado(s)
+            </th:block>
+        </div>
+
+        <div class="table-wrapper" th:unless="${#lists.isEmpty(professores)}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>RG</th>
+                    <th>Telefone</th>
+                    <th>Endereço</th>
+                    <th>Graduação</th>
+                    <th class="text-right">Ações</th>
+                </tr>
+                </thead>
+                <tbody th:attr="data-destacar=${q}">
+                <tr th:each="professor : ${professores}">
+                    <td class="td-strong destacavel" th:text="${professor.nomeProfessor}">Carlos Prado</td>
+                    <td class="nowrap destacavel" th:text="${professor.cpfFormatado}">123.456.789-00</td>
+                    <td class="nowrap destacavel" th:text="${professor.rgProfessor}">12.345.678-9</td>
+                    <td class="nowrap destacavel" th:text="${professor.telefoneFormatado}">(17) 99999-0000</td>
+                    <td class="destacavel" th:text="${professor.enderecoProfessor}">Rua A, 10</td>
+                    <td class="destacavel" th:text="${professor.graduacaoProfessor}">Mestre em Computação</td>
+                    <td>
+                        <div class="td-actions">
+                            <a class="btn btn-outline btn-sm" href="#"
+                               th:href="@{/professores/editar/{id}(id=${professor.idProfessor})}">
+                                <i class="fa-solid fa-pen"></i> <span>Editar</span>
+                            </a>
+                            <a class="btn btn-danger btn-sm" href="#"
+                               th:href="@{/professores/excluir/{id}(id=${professor.idProfessor})}"
+                               th:attr="data-confirmar=|Deseja excluir o professor ${professor.nomeProfessor}?|">
+                                <i class="fa-solid fa-trash"></i> <span>Excluir</span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(professores)}">
+            <i class="fa-solid fa-chalkboard-user"></i>
+            <h3 th:text="${q != null} ? 'Nenhum professor encontrado' : 'Nenhum professor cadastrado'">Nenhum professor</h3>
+            <p th:text="${q != null} ? 'Confira o que foi digitado ou busque por outro termo.' : 'Cadastre o primeiro professor para começar.'">
+                Cadastre o primeiro professor.
+            </p>
+            <a th:href="@{/professores/criar}" href="#" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Novo Professor</a>
+        </div>
+
+        <div th:replace="~{fragments/layout :: paginacao(${pagina}, ${urlBase})}"></div>
+
+    </div>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Pedido #' + ${pedido.idPedido})}">
+    <title>Pedido</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container container-estreito">
+
+    <nav class="breadcrumb">
+        <a th:href="@{/pedidos/listar}" href="#">Pedidos</a>
+        <i class="fa-solid fa-chevron-right"></i>
+        <span th:text="'Pedido #' + ${pedido.idPedido}">Pedido #1</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2 th:text="'Pedido #' + ${pedido.idPedido}">Pedido #1</h2>
+            <p>Resumo da compra e itens do pedido.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/pedidos/listar}" href="#" class="btn btn-secondary"><i class="fa-solid fa-list"></i> Todos os pedidos</a>
+            <a th:href="@{/loja}" href="#" class="btn btn-primary"><i class="fa-solid fa-store"></i> Continuar comprando</a>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <!-- vindo da tela "Novo pedido (balcão)" -->
+    <div class="alerts" th:if="${param.criado != null and sucesso == null}">
+        <div class="alert alert-success" role="status">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Pedido salvo com sucesso!</span>
+            <button type="button" class="alert-close" aria-label="Fechar">&times;</button>
+        </div>
+    </div>
+
+    <!-- DADOS DO PEDIDO -->
+    <section class="card" style="margin-bottom:20px">
+        <div class="card-header"><i class="fa-solid fa-receipt"></i> Dados do pedido</div>
+        <div class="card-body">
+            <div class="info-grid">
+                <div>
+                    <span>Data</span>
+                    <strong th:text="${pedido.dataFormatada}">01/01/2026</strong>
+                </div>
+                <div>
+                    <span>Aluno</span>
+                    <strong th:if="${pedido.aluno != null}">
+                        <a th:href="@{/alunos/editar/{id}(id=${pedido.aluno.idAluno})}" href="#"
+                           th:text="${pedido.aluno.nomeAluno}">Aluno</a>
+                    </strong>
+                    <strong th:if="${pedido.aluno == null}">—</strong>
+                </div>
+                <div th:if="${pedido.aluno != null}">
+                    <span>CPF</span>
+                    <strong th:text="${pedido.aluno.cpfFormatado}">000.000.000-00</strong>
+                </div>
+                <div th:if="${pedido.aluno != null and pedido.aluno.curso != null}">
+                    <span>Curso</span>
+                    <strong th:text="${pedido.aluno.curso.nomeCurso}">Curso</strong>
+                </div>
+                <div>
+                    <span>Pagamento</span>
+                    <strong th:text="${pedido.formaPagamento != null ? pedido.formaPagamento : 'Não informado'}">PIX</strong>
+                </div>
+                <div>
+                    <span>Unidades</span>
+                    <strong th:text="${pedido.quantidadeItens}">2</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ITENS -->
+    <section class="card">
+        <div class="card-header"><i class="fa-solid fa-bag-shopping"></i> Itens do pedido</div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Atlética</th>
+                    <th>Quantidade</th>
+                    <th>Preço</th>
+                    <th class="text-right">Subtotal</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${pedido.itens}">
+                    <td>
+                        <a class="td-strong" th:if="${item.produto != null}" href="#"
+                           th:href="@{/loja/produto/{id}(id=${item.produto.idProduto})}"
+                           th:text="${item.produto.descricaoProduto}">Produto</a>
+                    </td>
+                    <td th:text="${item.produto != null and item.produto.atletica != null} ? ${item.produto.atletica.nomeAtletica} : '—'">Atlética</td>
+                    <td th:text="${item.quantidade}">1</td>
+                    <td class="nowrap" th:text="'R$ ' + ${#numbers.formatDecimal(item.preco, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</td>
+                    <td class="nowrap td-strong text-right"
+                        th:text="'R$ ' + ${#numbers.formatDecimal(item.subtotal, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="total-pedido">
+            <span>Total do pedido</span>
+            <strong th:text="'R$ ' + ${#numbers.formatDecimal(pedido.totalPedido != null ? pedido.totalPedido : 0, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</strong>
+        </div>
+    </section>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

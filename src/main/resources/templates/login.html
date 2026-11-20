@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Acesso ao sistema')}">
+    <title>Acesso ao Sistema</title>
+</head>
+
+<body>
+
+<main class="auth-page">
+
+    <div class="auth-card">
+
+        <div class="auth-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+        <h1>Acesso ao Sistema</h1>
+        <p class="sub">Insira suas credenciais para entrar no Novo Siga</p>
+
+        <!-- Mensagens -->
+        <div class="alerts" th:if="${param.error != null or param.logout != null or sucesso != null}">
+            <div class="alert alert-error" th:if="${param.error != null}">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span>Nome de usuário ou senha inválidos.</span>
+            </div>
+            <div class="alert alert-info" th:if="${param.logout != null}">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>Logout efetuado.</span>
+            </div>
+            <div class="alert alert-success" th:if="${sucesso != null}">
+                <i class="fa-solid fa-circle-check"></i>
+                <span th:text="${sucesso}">Cadastro realizado!</span>
+            </div>
+        </div>
+
+        <form th:action="@{/login}" action="#" method="post">
+
+            <div class="form-group">
+                <label for="username">Usuário</label>
+                <input type="text" id="username" name="username" placeholder="Seu login" autocomplete="username" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" name="password" placeholder="Sua senha" autocomplete="current-password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg btn-block">
+                <i class="fa-solid fa-right-to-bracket"></i> Entrar
+            </button>
+
+        </form>
+
+        <p class="auth-links">
+            Ainda não tem conta? <a th:href="@{/usuarios/criar}" href="#">Cadastre-se</a>
+        </p>
+
+    </div>
+
+</main>
+
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Busca')}">
+    <title>Busca</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container container-estreito">
+
+    <div class="page-header">
+        <div class="page-title">
+            <th:block th:if="${q != null}">
+                <h2>Resultados para “<span th:text="${q}">termo</span>”</h2>
+                <p><strong th:text="${resultado.total}">0</strong> registro(s) encontrado(s) em todo o sistema.</p>
+            </th:block>
+            <th:block th:if="${q == null}">
+                <h2>Buscar no sistema</h2>
+                <p>Digite na barra de busca do topo o que você procura: aluno, professor, disciplina, curso, atlética, produto ou nº de pedido.</p>
+            </th:block>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <!-- NENHUM RESULTADO -->
+    <div class="card empty-state" th:if="${q != null and resultado.vazio}">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <h3>Nenhum resultado encontrado</h3>
+        <p>
+            Dicas: confira a ortografia, use menos palavras ou termos mais gerais
+            (ex.: "camiseta" em vez de "camiseta preta tamanho M"). Acentos e maiúsculas não fazem diferença.
+        </p>
+        <a class="btn btn-primary" th:href="@{/loja}" href="#"><i class="fa-solid fa-store"></i> Ver produtos da loja</a>
+    </div>
+
+    <div th:if="${q != null and !resultado.vazio}" th:attr="data-destacar=${q}">
+
+        <!-- PRODUTOS -->
+        <section class="card busca-grupo" th:unless="${resultado.produtos.empty}">
+            <div class="card-header">
+                <i class="fa-solid fa-bag-shopping"></i> Produtos
+                <span class="badge badge-azul" th:text="${resultado.produtos.totalElements}">0</span>
+                <a class="ver-todos" th:href="@{/loja(q=${q})}" href="#">Ver na loja <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <a class="busca-item" th:each="p : ${resultado.produtos.content}" href="#"
+               th:href="@{/loja/produto/{id}(id=${p.idProduto})}">
+                <span class="sugestao-icone"><i class="fa-solid" th:classappend="${p.iconeCategoria}"></i></span>
+                <span class="busca-item-texto">
+                    <strong class="destacavel" th:text="${p.descricaoProduto}">Produto</strong>
+                    <small>
+                        <span class="destacavel" th:text="${p.atletica != null ? p.atletica.nomeAtletica : 'Sem atlética'}">Atlética</span> •
+                        <span class="destacavel" th:text="${p.categoriaProduto}">Categoria</span> •
+                        <span th:text="'R$ ' + ${#numbers.formatDecimal(p.valorProduto, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</span>
+                    </small>
+                </span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+        </section>
+
+        <!-- ALUNOS -->
+        <section class="card busca-grupo" th:unless="${resultado.alunos.empty}">
+            <div class="card-header">
+                <i class="fa-solid fa-user-graduate"></i> Alunos
+                <span class="badge badge-azul" th:text="${resultado.alunos.totalElements}">0</span>
+                <a class="ver-todos" th:href="@{/alunos/listar(q=${q})}" href="#">Ver todos <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <a class="busca-item" th:each="a : ${resultado.alunos.content}" href="#"
+               th:href="@{/alunos/editar/{id}(id=${a.idAluno})}">
+                <span class="sugestao-icone"><i class="fa-solid fa-user-graduate"></i></span>
+                <span class="busca-item-texto">
+                    <strong class="destacavel" th:text="${a.nomeAluno}">Aluno</strong>
+                    <small>
+                        <span class="destacavel" th:text="${a.curso?.nomeCurso}">Curso</span> •
+                        <span class="destacavel" th:text="${a.cidadeAluno}">Cidade</span> •
+                        CPF <span class="destacavel" th:text="${a.cpfFormatado}">000.000.000-00</span>
+                    </small>
+                </span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+        </section>
+
+        <!-- PROFESSORES -->
+        <section class="card busca-grupo" th:unless="${resultado.professores.empty}">
+            <div class="card-header">
+                <i class="fa-solid fa-chalkboard-user"></i> Professores
+                <span class="badge badge-azul" th:text="${resultado.professores.totalElements}">0</span>
+                <a class="ver-todos" th:href="@{/professores/listar(q=${q})}" href="#">Ver todos <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <a class="busca-item" th:each="p : ${resultado.professores.content}" href="#"
+               th:href="@{/professores/editar/{id}(id=${p.idProfessor})}">
+                <span class="sugestao-icone"><i class="fa-solid fa-chalkboard-user"></i></span>
+                <span class="busca-item-texto">
+                    <strong class="destacavel" th:text="${p.nomeProfessor}">Professor</strong>
+                    <small class="destacavel" th:text="${p.graduacaoProfessor}">Graduação</small>
+                </span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+        </section>
+
+        <!-- DISCIPLINAS -->
+        <section class="card busca-grupo" th:unless="${resultado.disciplinas.empty}">
+            <div class="card-header">
+                <i class="fa-solid fa-book"></i> Disciplinas
+                <span class="badge badge-azul" th:text="${resultado.disciplinas.totalElements}">0</span>
+                <a class="ver-todos" th:href="@{/disciplinas/listar(q=${q})}" href="#">Ver todas <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <a class="busca-item" th:each="d : ${resultado.disciplinas.content}" href="#"
+               th:href="@{/disciplinas/editar/{id}(id=${d.idDisciplina})}">
+                <span class="sugestao-icone"><i class="fa-solid fa-book"></i></span>
+                <span class="busca-item-texto">
+                    <strong class="destacavel" th:text="${d.nomeDisciplina}">Disciplina</strong>
+                    <small>
+                        <span class="destacavel" th:text="${d.siglaDisciplina}">SIGLA</span> •
+                        <span class="destacavel" th:text="${d.curso?.nomeCurso}">Curso</span> •
+                        <span class="destacavel" th:text="${d.professor?.nomeProfessor}">Professor</span>
+                    </small>
+                </span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+        </section>
+
+        <!-- CURSOS -->
+        <section class="card busca-grupo" th:unless="${resultado.cursos.empty}">
+            <div class="card-header">
+                <i class="fa-solid fa-book-open"></i> Cursos
+                <span class="badge badge-azul" th:text="${resultado.cursos.totalElements}">0</span>
+                <a class="ver-todos" th:href="@{/cursos/listar(q=${q})}" href="#">Ver todos <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <a class="busca-item" th:each="c : ${resultado.cursos.content}" href="#"
+               th:href="@{/cursos/editar/{id}(id=${c.idCurso})}">
+                <span class="sugestao-icone"><i class="fa-solid fa-book-open"></i></span>
+                <span class="busca-item-texto">
+                    <strong class="destacavel" th:text="${c.nomeCurso}">Curso</strong>
+                    <small class="destacavel" th:text="${c.descricaoCurso}">Descrição</small>
+                </span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+        </section>
+
+        <!-- ATLÉTICAS -->
+        <section class="card busca-grupo" th:unless="${resultado.atleticas.empty}">
+            <div class="card-header">
+                <i class="fa-solid fa-trophy"></i> Atléticas
+                <span class="badge badge-azul" th:text="${resultado.atleticas.totalElements}">0</span>
+                <a class="ver-todos" th:href="@{/atleticas/listar(q=${q})}" href="#">Ver todas <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <a class="busca-item" th:each="a : ${resultado.atleticas.content}" href="#"
+               th:href="@{/loja(atletica=${a.idAtletica})}">
+                <span class="sugestao-icone"><i class="fa-solid fa-trophy"></i></span>
+                <span class="busca-item-texto">
+                    <strong class="destacavel" th:text="${a.nomeAtletica}">Atlética</strong>
+                    <small th:text="${a.quantidadeProdutos} + ' produto(s) na loja'">0 produtos</small>
+                </span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+        </section>
+
+        <!-- PEDIDOS -->
+        <section class="card busca-grupo" th:unless="${resultado.pedidos.empty}">
+            <div class="card-header">
+                <i class="fa-solid fa-receipt"></i> Pedidos
+                <span class="badge badge-azul" th:text="${resultado.pedidos.totalElements}">0</span>
+                <a class="ver-todos" th:href="@{/pedidos/listar(q=${q})}" href="#">Ver todos <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <a class="busca-item" th:each="p : ${resultado.pedidos.content}" href="#"
+               th:href="@{/pedidos/detalhes/{id}(id=${p.idPedido})}">
+                <span class="sugestao-icone"><i class="fa-solid fa-receipt"></i></span>
+                <span class="busca-item-texto">
+                    <strong class="destacavel" th:text="'Pedido #' + ${p.idPedido}">Pedido #1</strong>
+                    <small>
+                        <span class="destacavel" th:text="${p.aluno?.nomeAluno}">Aluno</span> •
+                        <span th:text="'R$ ' + ${#numbers.formatDecimal(p.totalPedido != null ? p.totalPedido : 0, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</span>
+                    </small>
+                </span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+        </section>
+
+    </div>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

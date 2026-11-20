@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Disciplinas')}">
+    <title>Listar Disciplinas</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container">
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2>Lista de Disciplinas</h2>
+            <p>Visualize e gerencie as disciplinas cadastradas.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/disciplinas/criar}" href="#" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Nova Disciplina
+            </a>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <div class="card">
+
+        <form class="toolbar" th:action="@{/disciplinas/listar}" action="#" method="get" role="search">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" name="q" th:value="${q}" aria-label="Buscar disciplinas"
+                       placeholder="Buscar por nome, sigla, curso ou professor">
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+            <a th:if="${q != null}" th:href="@{/disciplinas/listar}" href="#" class="btn btn-secondary">Limpar</a>
+        </form>
+
+        <div class="result-info">
+            <th:block th:if="${q != null}">
+                <strong th:text="${pagina.totalElements}">0</strong> disciplina(s) encontrada(s) para
+                “<strong th:text="${q}">termo</strong>”
+            </th:block>
+            <th:block th:if="${q == null}">
+                <strong th:text="${pagina.totalElements}">0</strong> disciplina(s) cadastrada(s)
+            </th:block>
+        </div>
+
+        <div class="table-wrapper" th:unless="${#lists.isEmpty(disciplinas)}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Sigla</th>
+                    <th>Curso</th>
+                    <th>Professor</th>
+                    <th>Carga Horária</th>
+                    <th class="text-right">Ações</th>
+                </tr>
+                </thead>
+                <tbody th:attr="data-destacar=${q}">
+                <tr th:each="disciplina : ${disciplinas}">
+                    <td class="td-strong destacavel" th:text="${disciplina.nomeDisciplina}">Banco de Dados</td>
+                    <td><span class="badge badge-azul destacavel" th:text="${disciplina.siglaDisciplina}">BD</span></td>
+                    <td>
+                        <i class="fa-solid fa-graduation-cap" style="color:#94a3b8"></i>
+                        <span class="destacavel" th:text="${disciplina.curso?.nomeCurso}">Curso</span>
+                    </td>
+                    <td>
+                        <i class="fa-solid fa-user-tie" style="color:#94a3b8"></i>
+                        <span class="destacavel" th:text="${disciplina.professor?.nomeProfessor}">Professor</span>
+                    </td>
+                    <td class="nowrap">
+                        <i class="fa-regular fa-clock"></i>
+                        <span th:text="${disciplina.cargaHorariaDisciplina}">80</span> horas
+                    </td>
+                    <td>
+                        <div class="td-actions">
+                            <a class="btn btn-outline btn-sm" href="#"
+                               th:href="@{/disciplinas/editar/{id}(id=${disciplina.idDisciplina})}">
+                                <i class="fa-solid fa-pen"></i> <span>Editar</span>
+                            </a>
+                            <a class="btn btn-danger btn-sm" href="#"
+                               th:href="@{/disciplinas/excluir/{id}(id=${disciplina.idDisciplina})}"
+                               th:attr="data-confirmar=|Deseja excluir a disciplina ${disciplina.nomeDisciplina}?|">
+                                <i class="fa-solid fa-trash"></i> <span>Excluir</span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(disciplinas)}">
+            <i class="fa-solid fa-book"></i>
+            <h3 th:text="${q != null} ? 'Nenhuma disciplina encontrada' : 'Nenhuma disciplina cadastrada'">Nenhuma disciplina</h3>
+            <p th:text="${q != null} ? 'Confira o que foi digitado ou busque por outro termo.' : 'Cadastre a primeira disciplina para começar.'">
+                Cadastre a primeira disciplina.
+            </p>
+            <a th:href="@{/disciplinas/criar}" href="#" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nova Disciplina</a>
+        </div>
+
+        <div th:replace="~{fragments/layout :: paginacao(${pagina}, ${urlBase})}"></div>
+
+    </div>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

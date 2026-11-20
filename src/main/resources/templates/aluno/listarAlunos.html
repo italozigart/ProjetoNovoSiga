@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Alunos')}">
+    <title>Listar Alunos</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container">
+
+    <!-- TÍTULO E BOTÃO -->
+    <div class="page-header">
+        <div class="page-title">
+            <h2>Lista de Alunos</h2>
+            <p>Consulte e gerencie os alunos cadastrados no sistema.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/alunos/criar}" href="#" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Novo Aluno
+            </a>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <div class="card">
+
+        <!-- BARRA DE BUSCA -->
+        <form class="toolbar" th:action="@{/alunos/listar}" action="#" method="get" role="search">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" name="q" th:value="${q}" aria-label="Buscar alunos"
+                       placeholder="Buscar por nome, CPF, telefone, endereço, cidade ou curso">
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+            <a th:if="${q != null}" th:href="@{/alunos/listar}" href="#" class="btn btn-secondary">Limpar</a>
+        </form>
+
+        <!-- QUANTIDADE DE RESULTADOS -->
+        <div class="result-info">
+            <th:block th:if="${q != null}">
+                <strong th:text="${pagina.totalElements}">0</strong> aluno(s) encontrado(s) para
+                “<strong th:text="${q}">termo</strong>”
+            </th:block>
+            <th:block th:if="${q == null}">
+                <strong th:text="${pagina.totalElements}">0</strong> aluno(s) cadastrado(s)
+            </th:block>
+        </div>
+
+        <!-- TABELA -->
+        <div class="table-wrapper" th:unless="${#lists.isEmpty(alunos)}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Foto</th>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>Telefone</th>
+                    <th>Endereço</th>
+                    <th>Cidade/UF</th>
+                    <th>Curso</th>
+                    <th class="text-right">Ações</th>
+                </tr>
+                </thead>
+                <tbody th:attr="data-destacar=${q}">
+                <tr th:each="aluno : ${alunos}">
+
+                    <!-- FOTO -->
+                    <td>
+                        <img th:if="${aluno.temFoto}" th:src="@{/alunos/foto/{id}(id=${aluno.idAluno})}"
+                             class="thumb" alt="Foto do aluno">
+                        <div th:unless="${aluno.temFoto}" class="thumb-vazia"><i class="fa-solid fa-user"></i></div>
+                    </td>
+
+                    <td class="td-strong destacavel" th:text="${aluno.nomeAluno}">Ana Souza</td>
+                    <td class="nowrap destacavel" th:text="${aluno.cpfFormatado}">123.456.789-00</td>
+                    <td class="nowrap destacavel" th:text="${aluno.telefoneFormatado}">(17) 99999-0000</td>
+                    <td>
+                        <span class="destacavel" th:text="${aluno.enderecoAluno}">Rua A, 10</span>
+                        <span class="td-sub">
+                            <span class="destacavel" th:text="${aluno.bairroAluno}">Centro</span> •
+                            <span class="nowrap">CEP <span th:text="${aluno.cepFormatado}">15700-000</span></span>
+                        </span>
+                    </td>
+                    <td class="nowrap destacavel" th:text="|${aluno.cidadeAluno}/${aluno.estadoAluno}|">Jales/SP</td>
+                    <td class="destacavel" th:text="${aluno.curso?.nomeCurso}">Sistemas para Internet</td>
+
+                    <!-- AÇÕES -->
+                    <td>
+                        <div class="td-actions">
+                            <a th:href="@{/alunos/editar/{id}(id=${aluno.idAluno})}" href="#" class="btn btn-outline btn-sm">
+                                <i class="fa-solid fa-pen"></i> <span>Editar</span>
+                            </a>
+                            <a th:href="@{/alunos/excluir/{id}(id=${aluno.idAluno})}" href="#" class="btn btn-danger btn-sm"
+                               th:attr="data-confirmar=|Deseja excluir o aluno ${aluno.nomeAluno}?|">
+                                <i class="fa-solid fa-trash"></i> <span>Excluir</span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- NENHUM RESULTADO -->
+        <div class="empty-state" th:if="${#lists.isEmpty(alunos)}">
+            <i class="fa-solid fa-user-graduate"></i>
+            <h3 th:text="${q != null} ? 'Nenhum aluno encontrado' : 'Nenhum aluno cadastrado'">Nenhum aluno</h3>
+            <p th:text="${q != null} ? 'Confira o que foi digitado ou busque por outro termo (nome, CPF, cidade, curso...).' : 'Cadastre o primeiro aluno para começar.'">
+                Cadastre o primeiro aluno.
+            </p>
+            <a th:href="@{/alunos/criar}" href="#" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Novo Aluno</a>
+        </div>
+
+        <!-- PAGINAÇÃO -->
+        <div th:replace="~{fragments/layout :: paginacao(${pagina}, ${urlBase})}"></div>
+
+    </div>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

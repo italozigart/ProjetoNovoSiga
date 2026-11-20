@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Carrinho')}">
+    <title>Carrinho</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container">
+
+    <div class="etapas" th:unless="${resumo.vazio}">
+        <span class="etapa atual"><span class="num">1</span> Carrinho</span>
+        <span class="etapa-linha"></span>
+        <span class="etapa"><span class="num">2</span> Aluno e pagamento</span>
+        <span class="etapa-linha"></span>
+        <span class="etapa"><span class="num">3</span> Pedido confirmado</span>
+    </div>
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2>Meu carrinho</h2>
+            <p>Confira os produtos, ajuste as quantidades e finalize a compra.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/loja}" href="#" class="btn btn-outline">
+                <i class="fa-solid fa-arrow-left"></i> Continuar comprando
+            </a>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <!-- CARRINHO VAZIO -->
+    <div class="card empty-state" th:if="${resumo.vazio}">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <h3>Seu carrinho está vazio</h3>
+        <p>Visite a loja e escolha os produtos das atléticas.</p>
+        <a class="btn btn-primary" th:href="@{/loja}" href="#"><i class="fa-solid fa-store"></i> Ir para a loja</a>
+    </div>
+
+    <div class="carrinho-layout" th:unless="${resumo.vazio}">
+
+        <!-- ITENS -->
+        <section class="card cart-lista">
+            <div class="card-header">
+                <i class="fa-solid fa-bag-shopping"></i>
+                <span th:text="${#lists.size(resumo.itens)} + ' produto(s) no carrinho'">2 produto(s) no carrinho</span>
+            </div>
+
+            <div class="cart-item" th:each="item : ${resumo.itens}" th:with="p=${item.produto}"
+                 th:classappend="${item.estoqueInsuficiente} ? 'com-alerta'">
+
+                <a class="cart-thumb" th:href="@{/loja/produto/{id}(id=${p.idProduto})}" href="#">
+                    <img th:if="${p.temImagem}" th:src="@{/produtos/imagem/{id}(id=${p.idProduto})}"
+                         th:alt="${p.descricaoProduto}" alt="Produto">
+                    <i th:unless="${p.temImagem}" class="fa-solid" th:classappend="${p.iconeCategoria}"></i>
+                </a>
+
+                <div class="cart-info">
+                    <a th:href="@{/loja/produto/{id}(id=${p.idProduto})}" href="#" th:text="${p.descricaoProduto}">Camiseta</a>
+                    <small th:if="${p.atletica != null}" th:text="${p.atletica.nomeAtletica}">Atlética</small>
+                    <small th:text="'R$ ' + ${#numbers.formatDecimal(p.valorProduto, 1, 'POINT', 2, 'COMMA')} + ' cada'">R$ 59,90 cada</small>
+                    <small class="cart-alerta" th:if="${item.estoqueInsuficiente}"
+                           th:text="${p.disponivel} ? ('Só há ' + ${p.estoqueDisponivel} + ' unidade(s) em estoque. Diminua a quantidade.') : 'Produto esgotado. Remova-o do carrinho.'">
+                        Estoque insuficiente
+                    </small>
+                </div>
+
+                <!-- QUANTIDADE (envia sozinho ao mudar) -->
+                <form class="cart-qtd" th:action="@{/carrinho/atualizar}" action="#" method="post">
+                    <input type="hidden" name="idProduto" th:value="${p.idProduto}">
+                    <div class="qtd-control">
+                        <button type="button" data-qtd="-1" aria-label="Diminuir">−</button>
+                        <input type="number" name="quantidade" min="1" th:value="${item.quantidade}"
+                               aria-label="Quantidade" data-auto-enviar>
+                        <button type="button" data-qtd="1" aria-label="Aumentar">+</button>
+                    </div>
+                    <noscript><button type="submit" class="btn btn-sm btn-secondary">Atualizar</button></noscript>
+                </form>
+
+                <strong class="cart-subtotal"
+                        th:text="'R$ ' + ${#numbers.formatDecimal(item.subtotal, 1, 'POINT', 2, 'COMMA')}">R$ 119,80</strong>
+
+                <form class="cart-remover" th:action="@{/carrinho/remover}" action="#" method="post">
+                    <input type="hidden" name="idProduto" th:value="${p.idProduto}">
+                    <button type="submit" class="btn btn-danger btn-sm btn-icon" title="Remover do carrinho"
+                            aria-label="Remover do carrinho">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- RESUMO -->
+        <aside class="card resumo">
+            <div class="card-body">
+                <h3 class="resumo-titulo">Resumo da compra</h3>
+
+                <div class="resumo-linha">
+                    <span>Unidades</span>
+                    <span th:text="${resumo.totalUnidades}">3</span>
+                </div>
+                <div class="resumo-linha">
+                    <span>Entrega</span>
+                    <span>Retirada com a atlética</span>
+                </div>
+
+                <div class="resumo-total">
+                    <span>Total</span>
+                    <strong th:text="'R$ ' + ${#numbers.formatDecimal(resumo.total, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</strong>
+                </div>
+
+                <div class="alert alert-warning" th:if="${resumo.problemaEstoque}">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Alguns itens não têm estoque suficiente. Ajuste as quantidades para continuar.</span>
+                </div>
+
+                <a class="btn btn-success btn-lg btn-block" th:href="@{/carrinho/finalizar}" href="#"
+                   th:classappend="${resumo.problemaEstoque} ? 'disabled'">
+                    <i class="fa-solid fa-lock"></i> Finalizar compra
+                </a>
+
+                <form th:action="@{/carrinho/limpar}" action="#" method="post">
+                    <button type="submit" class="btn btn-secondary btn-block" data-confirmar="Deseja esvaziar o carrinho?">
+                        <i class="fa-solid fa-trash-can"></i> Esvaziar carrinho
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+    </div>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

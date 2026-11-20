@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Loja das Atléticas')}">
+    <title>Loja das Atléticas</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container">
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2>Loja das Atléticas</h2>
+            <p>Camisetas, canecas, ingressos e muito mais. Busque, filtre e adicione ao carrinho.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/carrinho}" href="#" class="btn btn-outline">
+                <i class="fa-solid fa-cart-shopping"></i> Ver carrinho
+                <span class="badge badge-azul" th:if="${qtdCarrinho != null and qtdCarrinho > 0}" th:text="${qtdCarrinho}">2</span>
+            </a>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <!-- ATALHO POR ATLÉTICA -->
+    <nav class="atleticas-chips" aria-label="Filtrar por atlética" th:unless="${#lists.isEmpty(atleticas)}">
+        <a class="chip" th:href="@{/loja}" href="#" th:classappend="${filtro.atletica == null} ? 'ativo'">
+            <span class="chip-logo"><i class="fa-solid fa-border-all"></i></span> Todas
+        </a>
+        <a class="chip" th:each="a : ${atleticas}" th:href="@{/loja(atletica=${a.idAtletica})}" href="#"
+           th:classappend="${filtro.atletica == a.idAtletica} ? 'ativo'">
+            <img class="chip-logo" th:if="${a.temLogo}" th:src="@{/atleticas/logo/{id}(id=${a.idAtletica})}" alt="">
+            <span class="chip-logo" th:unless="${a.temLogo}"><i class="fa-solid fa-trophy"></i></span>
+            <span th:text="${a.nomeAtletica}">Atlética</span>
+        </a>
+    </nav>
+
+    <div class="loja-layout">
+
+        <!-- =========================
+             FILTROS
+        ========================== -->
+        <aside class="card filtros">
+          <!-- no celular os filtros começam recolhidos (ver novosiga.js) -->
+          <details class="filtros-caixa" open data-fechar-no-celular>
+            <summary>
+                <i class="fa-solid fa-sliders"></i> Buscar e filtrar
+                <span class="badge badge-azul" th:if="${filtro.ativo}">filtros ativos</span>
+            </summary>
+            <form class="card-body" th:action="@{/loja}" action="#" method="get" role="search">
+
+                <div class="filtro-grupo">
+                    <label class="filtro-titulo" for="filtro-q">Buscar produto</label>
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="search" id="filtro-q" name="q" th:value="${filtro.q}"
+                               placeholder="Ex.: camiseta, caneca">
+                    </div>
+                </div>
+
+                <div class="filtro-grupo">
+                    <label class="filtro-titulo" for="filtro-atletica">Atlética</label>
+                    <select id="filtro-atletica" name="atletica" class="campo">
+                        <option value="">Todas as atléticas</option>
+                        <option th:each="a : ${atleticas}" th:value="${a.idAtletica}" th:text="${a.nomeAtletica}"
+                                th:selected="${filtro.atletica == a.idAtletica}">Atlética</option>
+                    </select>
+                </div>
+
+                <div class="filtro-grupo" th:unless="${#lists.isEmpty(categorias)}">
+                    <span class="filtro-titulo">Categoria</span>
+                    <div class="categoria-lista">
+                        <label class="check">
+                            <input type="radio" name="categoria" value="" th:checked="${filtro.categoria == null}"> Todas
+                        </label>
+                        <label class="check" th:each="c : ${categorias}">
+                            <input type="radio" name="categoria" th:value="${c}" th:checked="${filtro.categoria == c}">
+                            <span th:text="${c}">Camiseta</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="filtro-grupo">
+                    <span class="filtro-titulo">Preço (R$)</span>
+                    <div class="preco-faixa">
+                        <input type="number" name="precoMin" class="campo" min="0" step="0.01" placeholder="Mínimo"
+                               aria-label="Preço mínimo" th:value="${filtro.precoMin}">
+                        <input type="number" name="precoMax" class="campo" min="0" step="0.01" placeholder="Máximo"
+                               aria-label="Preço máximo" th:value="${filtro.precoMax}">
+                    </div>
+                </div>
+
+                <div class="filtro-grupo">
+                    <label class="check">
+                        <input type="checkbox" name="disponiveis" value="true" th:checked="${filtro.disponiveis}">
+                        Somente com estoque
+                    </label>
+                </div>
+
+                <!-- mantém a ordenação escolhida -->
+                <input type="hidden" name="ordem" th:value="${filtro.ordem}">
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fa-solid fa-filter"></i> Aplicar filtros
+                </button>
+                <a th:if="${filtro.ativo}" th:href="@{/loja}" href="#" class="btn btn-secondary btn-block mt">
+                    Limpar filtros
+                </a>
+            </form>
+          </details>
+        </aside>
+
+        <!-- =========================
+             RESULTADOS
+        ========================== -->
+        <section>
+
+            <div class="resultados-topo">
+                <p>
+                    <strong th:text="${pagina.totalElements}">0</strong>
+                    <span th:text="${pagina.totalElements == 1} ? 'produto encontrado' : 'produtos encontrados'">produtos encontrados</span>
+                    <th:block th:if="${filtro.q != null}">para “<strong th:text="${filtro.q}">camiseta</strong>”</th:block>
+                </p>
+
+                <!-- ORDENAÇÃO (mantém os filtros atuais) -->
+                <form class="ordenar" th:action="@{/loja}" action="#" method="get">
+                    <input type="hidden" name="q" th:if="${filtro.q != null}" th:value="${filtro.q}">
+                    <input type="hidden" name="atletica" th:if="${filtro.atletica != null}" th:value="${filtro.atletica}">
+                    <input type="hidden" name="categoria" th:if="${filtro.categoria != null}" th:value="${filtro.categoria}">
+                    <input type="hidden" name="precoMin" th:if="${filtro.precoMin != null}" th:value="${filtro.precoMin}">
+                    <input type="hidden" name="precoMax" th:if="${filtro.precoMax != null}" th:value="${filtro.precoMax}">
+                    <input type="hidden" name="disponiveis" value="true" th:if="${filtro.disponiveis}">
+
+                    <label for="ordem">Ordenar por</label>
+                    <select id="ordem" name="ordem" data-auto-enviar>
+                        <option value="recentes" th:selected="${filtro.ordem == 'recentes'}">Mais recentes</option>
+                        <option value="nome" th:selected="${filtro.ordem == 'nome'}">Nome (A–Z)</option>
+                        <option value="menorPreco" th:selected="${filtro.ordem == 'menorPreco'}">Menor preço</option>
+                        <option value="maiorPreco" th:selected="${filtro.ordem == 'maiorPreco'}">Maior preço</option>
+                    </select>
+                    <noscript><button type="submit" class="btn btn-sm btn-secondary">OK</button></noscript>
+                </form>
+            </div>
+
+            <!-- FILTROS APLICADOS (clique no x para remover) -->
+            <div class="filtros-ativos" th:if="${filtro.ativo}">
+                <a class="filtro-tag" th:if="${filtro.q != null}" th:href="@{${filtro.urlSem('q')}}" href="#"
+                   title="Remover este filtro">
+                    Busca: <span th:text="${filtro.q}">camiseta</span> <i class="fa-solid fa-xmark"></i>
+                </a>
+                <a class="filtro-tag" th:if="${atleticaSelecionada != null}" th:href="@{${filtro.urlSem('atletica')}}" href="#"
+                   title="Remover este filtro">
+                    <span th:text="${atleticaSelecionada.nomeAtletica}">Atlética</span> <i class="fa-solid fa-xmark"></i>
+                </a>
+                <a class="filtro-tag" th:if="${filtro.categoria != null}" th:href="@{${filtro.urlSem('categoria')}}" href="#"
+                   title="Remover este filtro">
+                    <span th:text="${filtro.categoria}">Camiseta</span> <i class="fa-solid fa-xmark"></i>
+                </a>
+                <a class="filtro-tag" th:if="${filtro.precoMin != null or filtro.precoMax != null}"
+                   th:href="@{${filtro.urlSem('preco')}}" href="#" title="Remover este filtro">
+                    Faixa de preço <i class="fa-solid fa-xmark"></i>
+                </a>
+                <a class="filtro-tag" th:if="${filtro.disponiveis}" th:href="@{${filtro.urlSem('disponiveis')}}" href="#"
+                   title="Remover este filtro">
+                    Com estoque <i class="fa-solid fa-xmark"></i>
+                </a>
+                <a class="filtro-limpar" th:href="@{/loja}" href="#">Limpar tudo</a>
+            </div>
+
+            <!-- VITRINE -->
+            <div class="product-grid" th:unless="${#lists.isEmpty(produtos)}" th:attr="data-destacar=${filtro.q}">
+                <th:block th:each="produto : ${produtos}"><article th:replace="~{fragments/produto :: card(${produto})}"></article></th:block>
+            </div>
+
+            <!-- NENHUM PRODUTO -->
+            <div class="card empty-state" th:if="${#lists.isEmpty(produtos)}">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <h3>Nenhum produto encontrado</h3>
+                <p>Tente outras palavras, remova algum filtro ou veja todos os produtos da loja.</p>
+                <a class="btn btn-primary" th:href="@{/loja}" href="#">Ver todos os produtos</a>
+            </div>
+
+            <!-- PAGINAÇÃO -->
+            <div class="pagination-solta">
+                <div th:replace="~{fragments/layout :: paginacao(${pagina}, ${urlBase})}"></div>
+            </div>
+
+        </section>
+    </div>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Início')}">
+    <title>Início</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container">
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <!-- BOAS-VINDAS -->
+    <section class="welcome">
+        <h2>
+            Olá<th:block th:if="${usuarioLogado != null}">, <span th:text="${usuarioLogado}">Usuário</span></th:block>!
+        </h2>
+        <p>Use o menu, a busca no topo da página ou os atalhos abaixo para acessar o sistema.</p>
+    </section>
+
+    <!-- GESTÃO ACADÊMICA -->
+    <h3 class="secao-titulo"><i class="fa-solid fa-graduation-cap"></i> Gestão acadêmica</h3>
+
+    <section class="menu-grid">
+
+        <a th:href="@{/alunos/listar}" href="#" class="menu-card">
+            <div class="menu-icon"><i class="fa-solid fa-user-graduate"></i></div>
+            <div class="menu-card-texto">
+                <h3>Alunos</h3>
+                <p>Consulte, cadastre e gerencie os alunos.</p>
+            </div>
+            <span class="menu-count" th:text="${totalAlunos}">0</span>
+        </a>
+
+        <a th:href="@{/professores/listar}" href="#" class="menu-card">
+            <div class="menu-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
+            <div class="menu-card-texto">
+                <h3>Professores</h3>
+                <p>Gerencie os professores cadastrados.</p>
+            </div>
+            <span class="menu-count" th:text="${totalProfessores}">0</span>
+        </a>
+
+        <a th:href="@{/cursos/listar}" href="#" class="menu-card">
+            <div class="menu-icon"><i class="fa-solid fa-book-open"></i></div>
+            <div class="menu-card-texto">
+                <h3>Cursos</h3>
+                <p>Cursos oferecidos pela instituição.</p>
+            </div>
+            <span class="menu-count" th:text="${totalCursos}">0</span>
+        </a>
+
+        <a th:href="@{/disciplinas/listar}" href="#" class="menu-card">
+            <div class="menu-icon"><i class="fa-solid fa-book"></i></div>
+            <div class="menu-card-texto">
+                <h3>Disciplinas</h3>
+                <p>Disciplinas de cada curso e seus professores.</p>
+            </div>
+            <span class="menu-count" th:text="${totalDisciplinas}">0</span>
+        </a>
+
+    </section>
+
+    <!-- LOJA DAS ATLÉTICAS -->
+    <h3 class="secao-titulo"><i class="fa-solid fa-trophy"></i> Loja das atléticas</h3>
+
+    <section class="menu-grid">
+
+        <a th:href="@{/loja}" href="#" class="menu-card">
+            <div class="menu-icon laranja"><i class="fa-solid fa-store"></i></div>
+            <div class="menu-card-texto">
+                <h3>Loja</h3>
+                <p>Busque e compre os produtos das atléticas.</p>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:#94a3b8"></i>
+        </a>
+
+        <a th:href="@{/carrinho}" href="#" class="menu-card">
+            <div class="menu-icon verde"><i class="fa-solid fa-cart-shopping"></i></div>
+            <div class="menu-card-texto">
+                <h3>Carrinho</h3>
+                <p>Itens escolhidos aguardando a finalização.</p>
+            </div>
+            <span class="menu-count" th:text="${qtdCarrinho}">0</span>
+        </a>
+
+        <a th:href="@{/atleticas/listar}" href="#" class="menu-card">
+            <div class="menu-icon roxo"><i class="fa-solid fa-trophy"></i></div>
+            <div class="menu-card-texto">
+                <h3>Atléticas</h3>
+                <p>Cadastre as atléticas que vendem produtos.</p>
+            </div>
+            <span class="menu-count" th:text="${totalAtleticas}">0</span>
+        </a>
+
+        <a th:href="@{/produtos/listar}" href="#" class="menu-card">
+            <div class="menu-icon"><i class="fa-solid fa-box"></i></div>
+            <div class="menu-card-texto">
+                <h3>Produtos</h3>
+                <p>Cadastro de produtos, preços e estoque.</p>
+            </div>
+            <span class="menu-count" th:text="${totalProdutos}">0</span>
+        </a>
+
+        <a th:href="@{/pedidos/listar}" href="#" class="menu-card">
+            <div class="menu-icon"><i class="fa-solid fa-receipt"></i></div>
+            <div class="menu-card-texto">
+                <h3>Pedidos</h3>
+                <p>Compras realizadas pela loja e no balcão.</p>
+            </div>
+            <span class="menu-count" th:text="${totalPedidos}">0</span>
+        </a>
+
+    </section>
+
+    <!-- DESTAQUES DA LOJA -->
+    <th:block th:if="${!#lists.isEmpty(destaques)}">
+        <h3 class="secao-titulo"><i class="fa-solid fa-star"></i> Novidades na loja</h3>
+        <section class="product-grid">
+            <th:block th:each="destaque : ${destaques}"><article th:replace="~{fragments/produto :: card(${destaque})}"></article></th:block>
+        </section>
+    </th:block>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

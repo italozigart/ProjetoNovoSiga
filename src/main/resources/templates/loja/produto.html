@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head(${produto.descricaoProduto})}">
+    <title>Produto</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container">
+
+    <!-- CAMINHO (breadcrumb) -->
+    <nav class="breadcrumb">
+        <a th:href="@{/loja}" href="#">Loja</a>
+        <i class="fa-solid fa-chevron-right"></i>
+        <th:block th:if="${produto.categoriaProduto != null}">
+            <a th:href="@{/loja(categoria=${produto.categoriaProduto})}" href="#" th:text="${produto.categoriaProduto}">Camiseta</a>
+            <i class="fa-solid fa-chevron-right"></i>
+        </th:block>
+        <span th:text="${produto.descricaoProduto}">Produto</span>
+    </nav>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <div class="card produto-detalhe">
+
+        <!-- IMAGEM -->
+        <div class="produto-imagem">
+            <img th:if="${produto.temImagem}" th:src="@{/produtos/imagem/{id}(id=${produto.idProduto})}"
+                 th:alt="${produto.descricaoProduto}" alt="Produto">
+            <i th:unless="${produto.temImagem}" class="fa-solid placeholder" th:classappend="${produto.iconeCategoria}"></i>
+        </div>
+
+        <!-- INFORMAÇÕES -->
+        <div class="produto-info">
+
+            <a class="product-atletica" th:if="${produto.atletica != null}" href="#"
+               th:href="@{/loja(atletica=${produto.atletica.idAtletica})}">
+                <i class="fa-solid fa-trophy"></i>
+                <span th:text="${produto.atletica.nomeAtletica}">Atlética</span>
+            </a>
+
+            <h1 th:text="${produto.descricaoProduto}">Camiseta Oficial</h1>
+
+            <div class="product-meta">
+                <span class="badge badge-azul" th:if="${produto.categoriaProduto != null}"
+                      th:text="${produto.categoriaProduto}">Camiseta</span>
+                <span class="badge badge-vermelho" th:unless="${produto.disponivel}">Esgotado</span>
+                <span class="badge" th:if="${produto.disponivel}"
+                      th:classappend="${produto.estoqueDisponivel <= 5} ? 'badge-amarelo' : 'badge-verde'"
+                      th:text="${produto.estoqueDisponivel} + ' em estoque'">10 em estoque</span>
+            </div>
+
+            <div class="produto-preco"
+                 th:text="'R$ ' + ${#numbers.formatDecimal(produto.valorProduto, 1, 'POINT', 2, 'COMMA')}">R$ 59,90</div>
+
+            <ul class="produto-specs">
+                <li><span>Marca</span><strong th:text="${produto.marcaProduto}">Atlética</strong></li>
+                <li><span>Modelo</span><strong th:text="${produto.modeloProduto}">Unissex</strong></li>
+                <li th:if="${produto.atletica != null and produto.atletica.curso != null}">
+                    <span>Curso</span><strong th:text="${produto.atletica.curso.nomeCurso}">Curso</strong>
+                </li>
+                <li><span>Código</span><strong th:text="'#' + ${produto.idProduto}">#1</strong></li>
+            </ul>
+
+            <!-- COMPRAR -->
+            <form class="comprar" th:if="${produto.disponivel}" th:action="@{/carrinho/adicionar}" action="#" method="post">
+                <input type="hidden" name="idProduto" th:value="${produto.idProduto}">
+
+                <div class="campo-qtd">
+                    <label for="quantidade">Quantidade</label>
+                    <div class="qtd-control">
+                        <button type="button" data-qtd="-1" aria-label="Diminuir">−</button>
+                        <input type="number" id="quantidade" name="quantidade" value="1" min="1"
+                               th:max="${produto.estoqueDisponivel}">
+                        <button type="button" data-qtd="1" aria-label="Aumentar">+</button>
+                    </div>
+                </div>
+
+                <!-- o botão clicado define para onde voltar depois de adicionar -->
+                <button type="submit" name="voltar" th:value="${urlAtual}" class="btn btn-outline btn-lg">
+                    <i class="fa-solid fa-cart-plus"></i> Adicionar ao carrinho
+                </button>
+                <button type="submit" name="voltar" value="/carrinho" class="btn btn-primary btn-lg">
+                    <i class="fa-solid fa-bolt"></i> Comprar agora
+                </button>
+            </form>
+
+            <div class="alert alert-warning" th:unless="${produto.disponivel}">
+                <i class="fa-solid fa-box-open"></i>
+                <span>Produto esgotado no momento. Veja outros produtos desta atlética abaixo.</span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MAIS PRODUTOS DA MESMA ATLÉTICA -->
+    <th:block th:unless="${#lists.isEmpty(relacionados)}">
+        <h3 class="secao-titulo"><i class="fa-solid fa-trophy"></i> Mais produtos desta atlética</h3>
+        <section class="product-grid">
+            <th:block th:each="relacionado : ${relacionados}"><article th:replace="~{fragments/produto :: card(${relacionado})}"></article></th:block>
+        </section>
+    </th:block>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

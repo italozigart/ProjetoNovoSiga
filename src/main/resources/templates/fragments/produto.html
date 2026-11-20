@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+    Card de produto usado na loja, na tela inicial e em "mais produtos desta atlética".
+    Uso: <article th:replace="~{fragments/produto :: card(${produto})}"></article>
+-->
+<article class="product-card" th:fragment="card(produto)">
+
+    <a class="product-media" th:href="@{/loja/produto/{id}(id=${produto.idProduto})}" href="#">
+        <img th:if="${produto.temImagem}" th:src="@{/produtos/imagem/{id}(id=${produto.idProduto})}"
+             th:alt="${produto.descricaoProduto}" alt="Produto" loading="lazy">
+        <i th:unless="${produto.temImagem}" class="fa-solid placeholder"
+           th:classappend="${produto.iconeCategoria}"></i>
+
+        <span class="badge badge-vermelho" th:unless="${produto.disponivel}">Esgotado</span>
+        <span class="badge badge-amarelo" th:if="${produto.disponivel and produto.estoqueDisponivel <= 5}">
+            Últimas unidades
+        </span>
+    </a>
+
+    <div class="product-body">
+        <span class="product-atletica">
+            <i class="fa-solid fa-trophy"></i>
+            <span class="destacavel"
+                  th:text="${produto.atletica != null ? produto.atletica.nomeAtletica : 'Sem atlética'}">Atlética</span>
+        </span>
+
+        <a class="product-title destacavel" th:href="@{/loja/produto/{id}(id=${produto.idProduto})}" href="#"
+           th:text="${produto.descricaoProduto}">Camiseta Oficial</a>
+
+        <div class="product-meta">
+            <span class="badge badge-azul destacavel" th:if="${produto.categoriaProduto != null}"
+                  th:text="${produto.categoriaProduto}">Camiseta</span>
+            <span class="product-stock" th:if="${produto.disponivel}"
+                  th:classappend="${produto.estoqueDisponivel <= 5} ? 'baixo'"
+                  th:text="${produto.estoqueDisponivel} + ' em estoque'">10 em estoque</span>
+        </div>
+
+        <div class="product-price"
+             th:text="'R$ ' + ${#numbers.formatDecimal(produto.valorProduto, 1, 'POINT', 2, 'COMMA')}">R$ 59,90</div>
+
+        <form th:action="@{/carrinho/adicionar}" action="#" method="post">
+            <input type="hidden" name="idProduto" th:value="${produto.idProduto}">
+            <input type="hidden" name="quantidade" value="1">
+            <input type="hidden" name="voltar" th:value="${urlAtual}">
+            <button type="submit" class="btn btn-primary btn-block" th:disabled="${!produto.disponivel}"
+                    th:title="${produto.disponivel} ? 'Adicionar ao carrinho' : 'Produto esgotado'">
+                <i class="fa-solid fa-cart-plus"></i>
+                <span th:text="${produto.disponivel} ? 'Adicionar' : 'Esgotado'">Adicionar</span>
+            </button>
+        </form>
+    </div>
+
+</article>
+
+</body>
+</html>

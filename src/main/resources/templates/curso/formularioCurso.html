@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head(${curso.idCurso == null ? 'Novo curso' : 'Editar curso'})}">
+    <title>Formulário de Curso</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container container-estreito">
+
+    <nav class="breadcrumb">
+        <a th:href="@{/cursos/listar}" href="#">Cursos</a>
+        <i class="fa-solid fa-chevron-right"></i>
+        <span th:text="${curso.idCurso == null} ? 'Novo curso' : 'Editar curso'">Novo curso</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2 th:text="${curso.idCurso == null} ? 'Cadastrar curso' : 'Editar curso'">Formulário de Curso</h2>
+            <p>Preencha as informações abaixo. Campos com <span class="required">*</span> são obrigatórios.</p>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <form class="card form-card" th:action="@{/cursos/salvar}" action="#" method="post" th:object="${curso}">
+
+        <input type="hidden" th:field="*{idCurso}">
+
+        <div class="section">
+            <div class="section-title"><i class="fa-solid fa-book-open"></i> Dados do curso</div>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="nomeCurso">Nome do Curso <span class="required">*</span></label>
+                    <input type="text" th:field="*{nomeCurso}" th:errorclass="is-invalid"
+                           maxlength="50" placeholder="Digite o nome do curso" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('nomeCurso')}" th:errors="*{nomeCurso}">Erro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="cargaHoraria">Carga Horária <span class="required">*</span></label>
+                    <div class="input-unit">
+                        <input type="number" th:field="*{cargaHoraria}" th:errorclass="is-invalid"
+                               min="1" placeholder="Ex.: 2400" required>
+                        <span class="unit">horas</span>
+                    </div>
+                    <span class="field-error" th:if="${#fields.hasErrors('cargaHoraria')}" th:errors="*{cargaHoraria}">Erro</span>
+                </div>
+
+                <div class="form-group full">
+                    <label for="descricaoCurso">Descrição <span class="required">*</span></label>
+                    <textarea th:field="*{descricaoCurso}" th:errorclass="is-invalid"
+                              maxlength="100" placeholder="Digite uma breve descrição do curso" required></textarea>
+                    <span class="field-error" th:if="${#fields.hasErrors('descricaoCurso')}" th:errors="*{descricaoCurso}">Erro</span>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a th:href="@{/cursos/listar}" href="#" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Salvar Curso
+            </button>
+        </div>
+
+    </form>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

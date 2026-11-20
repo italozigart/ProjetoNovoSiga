@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Produtos')}">
+    <title>Listar Produtos</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container">
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2>Produtos das Atléticas</h2>
+            <p>Cadastre e gerencie os produtos, preços e estoque de cada atlética.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/loja}" href="#" class="btn btn-outline"><i class="fa-solid fa-store"></i> Ver loja</a>
+            <a th:href="@{/produtos/criar}" href="#" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Novo Produto</a>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <div class="card">
+
+        <form class="toolbar" th:action="@{/produtos/listar}" action="#" method="get" role="search">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" name="q" th:value="${q}" aria-label="Buscar produtos"
+                       placeholder="Buscar por descrição, marca, modelo, categoria ou atlética">
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+            <a th:if="${q != null}" th:href="@{/produtos/listar}" href="#" class="btn btn-secondary">Limpar</a>
+        </form>
+
+        <div class="result-info">
+            <th:block th:if="${q != null}">
+                <strong th:text="${pagina.totalElements}">0</strong> produto(s) encontrado(s) para
+                “<strong th:text="${q}">termo</strong>”
+            </th:block>
+            <th:block th:if="${q == null}">
+                <strong th:text="${pagina.totalElements}">0</strong> produto(s) cadastrado(s)
+            </th:block>
+        </div>
+
+        <div class="table-wrapper" th:unless="${#lists.isEmpty(produtos)}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Imagem</th>
+                    <th>Descrição</th>
+                    <th>Atlética</th>
+                    <th>Categoria</th>
+                    <th>Valor</th>
+                    <th>Estoque</th>
+                    <th class="text-right">Ações</th>
+                </tr>
+                </thead>
+                <tbody th:attr="data-destacar=${q}">
+                <tr th:each="produto : ${produtos}">
+                    <td>
+                        <img th:if="${produto.temImagem}" th:src="@{/produtos/imagem/{id}(id=${produto.idProduto})}"
+                             class="thumb" alt="Imagem do produto">
+                        <div th:unless="${produto.temImagem}" class="thumb-vazia">
+                            <i class="fa-solid" th:classappend="${produto.iconeCategoria}"></i>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="td-strong destacavel" th:text="${produto.descricaoProduto}">Camiseta</span>
+                        <span class="td-sub">
+                            <span class="destacavel" th:text="${produto.marcaProduto}">Marca</span> •
+                            <span class="destacavel" th:text="${produto.modeloProduto}">Modelo</span>
+                        </span>
+                    </td>
+                    <td class="destacavel" th:text="${produto.atletica != null ? produto.atletica.nomeAtletica : '—'}">Atlética</td>
+                    <td>
+                        <span class="badge badge-azul destacavel" th:if="${produto.categoriaProduto != null}"
+                              th:text="${produto.categoriaProduto}">Camiseta</span>
+                    </td>
+                    <td class="nowrap td-strong"
+                        th:text="'R$ ' + ${#numbers.formatDecimal(produto.valorProduto, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</td>
+                    <td>
+                        <span class="badge badge-vermelho" th:unless="${produto.disponivel}">Esgotado</span>
+                        <span class="badge" th:if="${produto.disponivel}"
+                              th:classappend="${produto.estoqueDisponivel <= 5} ? 'badge-amarelo' : 'badge-verde'"
+                              th:text="${produto.estoqueDisponivel} + ' un.'">10 un.</span>
+                    </td>
+                    <td>
+                        <div class="td-actions">
+                            <a class="btn btn-outline btn-sm" href="#"
+                               th:href="@{/produtos/editar/{id}(id=${produto.idProduto})}">
+                                <i class="fa-solid fa-pen"></i> <span>Editar</span>
+                            </a>
+                            <a class="btn btn-danger btn-sm" href="#"
+                               th:href="@{/produtos/excluir/{id}(id=${produto.idProduto})}"
+                               th:attr="data-confirmar=|Deseja excluir o produto ${produto.descricaoProduto}?|">
+                                <i class="fa-solid fa-trash"></i> <span>Excluir</span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(produtos)}">
+            <i class="fa-solid fa-box-open"></i>
+            <h3 th:text="${q != null} ? 'Nenhum produto encontrado' : 'Nenhum produto cadastrado'">Nenhum produto</h3>
+            <p th:text="${q != null} ? 'Confira o que foi digitado ou busque por outro termo.' : 'Cadastre o primeiro produto de uma atlética.'">
+                Cadastre o primeiro produto.
+            </p>
+            <a th:href="@{/produtos/criar}" href="#" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Novo Produto</a>
+        </div>
+
+        <div th:replace="~{fragments/layout :: paginacao(${pagina}, ${urlBase})}"></div>
+
+    </div>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

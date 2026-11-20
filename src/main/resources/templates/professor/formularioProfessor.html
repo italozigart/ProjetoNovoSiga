@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head(${professor.idProfessor == null ? 'Novo professor' : 'Editar professor'})}">
+    <title>Formulário de Professor</title>
+</head>
+
+<body>
+
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container container-estreito">
+
+    <nav class="breadcrumb">
+        <a th:href="@{/professores/listar}" href="#">Professores</a>
+        <i class="fa-solid fa-chevron-right"></i>
+        <span th:text="${professor.idProfessor == null} ? 'Novo professor' : 'Editar professor'">Novo professor</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-title">
+            <h2 th:text="${professor.idProfessor == null} ? 'Cadastrar professor' : 'Editar professor'">Formulário de Professor</h2>
+            <p>Preencha as informações abaixo. Campos com <span class="required">*</span> são obrigatórios.</p>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <form class="card form-card" th:action="@{/professores/salvar}" action="#" method="post" th:object="${professor}">
+
+        <input type="hidden" th:field="*{idProfessor}">
+
+        <div class="alert alert-error" th:if="${#fields.hasErrors('*')}" style="margin-bottom:22px">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>Corrija os campos destacados em vermelho.</span>
+        </div>
+
+        <div class="section">
+            <div class="section-title"><i class="fa-solid fa-chalkboard-user"></i> Dados do professor</div>
+
+            <div class="form-grid">
+
+                <div class="form-group full">
+                    <label for="nomeProfessor">Nome <span class="required">*</span></label>
+                    <input type="text" th:field="*{nomeProfessor}" th:errorclass="is-invalid"
+                           maxlength="50" placeholder="Digite o nome completo" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('nomeProfessor')}" th:errors="*{nomeProfessor}">Erro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="cpfProfessor">CPF <span class="required">*</span></label>
+                    <input type="text" th:field="*{cpfProfessor}" th:errorclass="is-invalid"
+                           data-mascara="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('cpfProfessor')}" th:errors="*{cpfProfessor}">Erro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="rgProfessor">RG <span class="required">*</span></label>
+                    <input type="text" th:field="*{rgProfessor}" th:errorclass="is-invalid"
+                           maxlength="20" placeholder="Digite o RG" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('rgProfessor')}" th:errors="*{rgProfessor}">Erro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefoneProfessor">Telefone <span class="required">*</span></label>
+                    <input type="text" th:field="*{telefoneProfessor}" th:errorclass="is-invalid"
+                           data-mascara="telefone" inputmode="numeric" maxlength="15" placeholder="(17) 99999-0000" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('telefoneProfessor')}" th:errors="*{telefoneProfessor}">Erro</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="graduacaoProfessor">Graduação <span class="required">*</span></label>
+                    <input type="text" th:field="*{graduacaoProfessor}" th:errorclass="is-invalid"
+                           maxlength="50" placeholder="Ex.: Mestre em Computação" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('graduacaoProfessor')}" th:errors="*{graduacaoProfessor}">Erro</span>
+                </div>
+
+                <div class="form-group full">
+                    <label for="enderecoProfessor">Endereço <span class="required">*</span></label>
+                    <input type="text" th:field="*{enderecoProfessor}" th:errorclass="is-invalid"
+                           maxlength="40" placeholder="Rua, número" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('enderecoProfessor')}" th:errors="*{enderecoProfessor}">Erro</span>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a th:href="@{/professores/listar}" href="#" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Salvar Professor
+            </button>
+        </div>
+
+    </form>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: rodape}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>
